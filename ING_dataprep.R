@@ -56,6 +56,7 @@ NCA <- sf::st_read( "Z:/Common/QCLData/Habitat/NCA/GIS_NCA_IDARNGpgsSampling/BOP
 
 # Check if shapefiles are in the same coordinate system
 tracks
+#rawlocs has abundance data and Zoe said have accurate coordinates:
 rawlocs
 NCA
 # yes. In NAD83 zone11N (so eastings and northings)
@@ -64,16 +65,30 @@ NCA
 colnames( rawlocs )
 colnames( rawdata )
 # possibly. Start with rawlocs
-# remove extra columns:
-all_df <- rawdata %>% 
-  dplyr::select( TranName, Species, NumInd, Dated, ObTime, TempF, Temperatur,
-    Habitat, dominantsh, nonshrub, isshrub, Distance, DistanceM, 
-    Side, Bearing, Comments, Comment, 
-    EASTING, NORTHING, ELEV) #, geometry )
+#This option used the csv that Zoe sent to us but we had some 
+# rows with gps coordinates with only 4 numbers so we shifted to 
+# using the shapefile
+# all_df <- rawdata %>% 
+#   dplyr::select( TranName, Species, NumInd, Dated, ObTime, TempF, Temperatur,
+#     Habitat, dominantsh, nonshrub, isshrub, Distance, DistanceM, 
+#     Side, Bearing, Comments, Comment, 
+#     EASTING, NORTHING, ELEV) #, geometry )
+
+sort( names( rawlocs ) )
+
+all_df <- rawlocs %>% 
+  dplyr::select( TranName, Species, NumInd, Dated, ObTime, 
+                 TempF, Temperatur,
+                 Habitat, dominantsh, nonshrub, isshrub, Distance, DistanceM, 
+                 Side, Bearing, Comments, Comment, 
+                 #look likes these are not accurate, use geometry instead
+                 #EASTING, NORTHING, 
+                 ELEV) #, geometry )
 
 #check
 head( all_df ); dim( all_df )
 str(all_df)
+
 #combine similar columns
 all_df <- all_df %>% rowwise() %>% 
   mutate( Temp = sum( TempF, Temperatur),
@@ -85,29 +100,34 @@ all_df <- all_df %>% rowwise() %>%
 #check
 head( all_df ); dim( all_df )
 
-# NA are 1 I think
-all_df$NumInd[ is.na(all_df$NumInd) ] <- 1
+# # NA are 1 I think
+# all_df$NumInd[ is.na(all_df$NumInd) ] <- 1
 # Turn date into lubridate
 all_df <- all_df %>% 
-  mutate( Date = lubridate::dmy( Dated ),
+  mutate( Date = lubridate::ymd( Dated ),
           Year = lubridate::year( Date ),
           Month = lubridate::month( Date ) )
 
 #what species were detected:
 unique( all_df$Species )
+#check
+head( all_df )
+#unify species name for jackrabbits
+all_df$Species[grep(  "Black",all_df$Species, ignore.case = TRUE, value = FALSE )] <- "BTJR"
 
+
+head( all_df, 50 )
 
 #select rabbit records only, with location data
 rabbit_df <- all_df %>% 
   #keep only jackrabbit records
-  dplyr::filter( Species == "BTJR" ) %>% 
-  filter( !is.na(EASTING) ) %>% 
-  #turn into an sf dataframe using CRS from tracks
-  st_as_sf( .,coords = c( 'NORTHING', 'EASTING'),
-            crs = st_crs(tracks) )
-  
+  dplyr::filter( Species == "BTJR" )
+#drop XYM geometry
+rabbit_df <- st_zm( rabbit_df )
+
 #check
 head( rabbit_df); dim( rabbit_df )
+
 
 ###########################################################
 #### visualize data
@@ -115,8 +135,9 @@ head( rabbit_df); dim( rabbit_df )
 ggplot( rabbit_df ) +
   theme_classic( base_size = 17 ) +
   geom_sf() + 
-   geom_sf( data = tracks ) +
+   #geom_sf( data = tracks ) + 
+  geom_sf( data = NCA, alpha = 0 ) +
    facet_wrap( ~Year )
- #geom_sf( data = NCA )
+#### wrong coordinates in the dataframe 
 
 ####################### end of script #########################################
