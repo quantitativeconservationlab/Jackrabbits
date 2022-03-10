@@ -10,7 +10,6 @@
 # Clean your workspace to reset your R environment. #
 rm( list = ls() )
 
-
 # load packages relevant to this script:
 library( tidyverse ) #easy data manipulation
 # set option to see all columns and more than 10 rows
@@ -46,6 +45,7 @@ head( rawdata ); dim(rawdata)
 
 #import track shapefile
 tracks <- sf::st_read( paste0( datapath, "2020_BTJRRoutes_ALL.shp" ) )
+
 #import observations as shapefile
 rawlocs <- sf::st_read( paste0( datapath, "JackrabbitData_All.shp" ) )
 #import NCA shapefile
@@ -60,6 +60,9 @@ tracks
 rawlocs
 NCA
 # yes. In NAD83 zone11N (so eastings and northings)
+#drop extra geometry for tracks
+#drop XYM geometry
+tracks <- st_zm( tracks )
 
 # rawlocs and rawdata may be the same 
 colnames( rawlocs )
@@ -68,12 +71,23 @@ colnames( rawdata )
 #This option used the csv that Zoe sent to us but we had some 
 # rows with gps coordinates with only 4 numbers so we shifted to 
 # using the shapefile
-# all_df <- rawdata %>% 
-#   dplyr::select( TranName, Species, NumInd, Dated, ObTime, TempF, Temperatur,
-#     Habitat, dominantsh, nonshrub, isshrub, Distance, DistanceM, 
-#     Side, Bearing, Comments, Comment, 
-#     EASTING, NORTHING, ELEV) #, geometry )
+acc_df <- rawdata %>%
+  dplyr::select( TranName, Species, NumInd, Dated, ObTime, TempF, Temperatur,
+    Habitat, dominantsh, nonshrub, isshrub, Distance, DistanceM,
+    Side, Bearing, Comments, Comment ) 
+#what species are listed:
+unique( acc_df$Species)
+#vlack tail jackrabbits only appear as BTJR cleaned
+#unify species name for jackrabbits
+#acc_df$Species[grep(  "Black",acc_df$Species, ignore.case = TRUE, value = FALSE )] <- "BTJR"
+acc_df <- acc_df %>% 
+  #keep only jackrabbit records
+  dplyr::filter( Species == "BTJR" )
+#view
+head( acc_df );dim(acc_df)
 
+##### stopped because data are wrong!!!!!
+#### now work with shapefile:
 sort( names( rawlocs ) )
 
 all_df <- rawlocs %>% 
@@ -101,7 +115,8 @@ all_df <- all_df %>% rowwise() %>%
 head( all_df ); dim( all_df )
 
 # # NA are 1 I think
-# all_df$NumInd[ is.na(all_df$NumInd) ] <- 1
+all_df$NumInd[ is.na(all_df$NumInd) ] <- 1
+all_df$NumInd[ which(all_df$NumInd == 0) ] <- 1
 # Turn date into lubridate
 all_df <- all_df %>% 
   mutate( Date = lubridate::ymd( Dated ),
@@ -113,10 +128,7 @@ unique( all_df$Species )
 #check
 head( all_df )
 #unify species name for jackrabbits
-all_df$Species[grep(  "Black",all_df$Species, ignore.case = TRUE, value = FALSE )] <- "BTJR"
-
-
-head( all_df, 50 )
+all_df$Species[grep("Black",all_df$Species, ignore.case = TRUE, value = FALSE )] <- "BTJR"
 
 #select rabbit records only, with location data
 rabbit_df <- all_df %>% 
@@ -124,20 +136,68 @@ rabbit_df <- all_df %>%
   dplyr::filter( Species == "BTJR" )
 #drop XYM geometry
 rabbit_df <- st_zm( rabbit_df )
-
+#add space to time:
+rabbit_df$ObTime <- gsub("p", " p",rabbit_df$ObTime, fixed=TRUE)
+rabbit_df$ObTime <- gsub("a", " a",rabbit_df$ObTime, fixed=TRUE)
+# turn obttime column into time
+rabbit_df <- rabbit_df %>% 
+  dplyr::mutate( Time = lubridate::ymd_hms( paste( Date, ObTime, sep = " " ) ),
+                 hr = lubridate::hour( Time ) )
+  
 #check
 head( rabbit_df); dim( rabbit_df )
+# now add distance category
+rabbit_df <- rabbit_df %>% 
+  mutate( distcat = ifelse( Dist < 3, "rd", ifelse( Dist > 30, "near",
+                                                    "far") ) ) 
+
+#years of sampling
+unique( rabbit_df$Year )
+
+#summarise counts for transect:
+transum <- rabbit_df %>% 
+  group_by( TranName, Year, Month, distcat ) %>% 
+  summarize( totalN = n() )
+
+#view
+transum
 
 
 ###########################################################
 #### visualize data
+#possible sampling hours
+hist( rabbit_df$hr )
+# a lot of records collected at 3pm 
+#what about distance from road:
+hist( rabbit_df$Dist, breaks = 30 )
+
+# modifed tracks for plotting
+tracks <- cbind( tracks, st_coordinates(st_centroid(tracks)) )
+
 #plot 
-ggplot( rabbit_df ) +
-  theme_classic( base_size = 17 ) +
-  geom_sf() + 
-   #geom_sf( data = tracks ) + 
-  geom_sf( data = NCA, alpha = 0 ) +
-   facet_wrap( ~Year )
-#### wrong coordinates in the dataframe 
+rabbit_df %>% filter( Year == 2019 ) %>% 
+ggplot(.) +
+  theme_classic( base_size = 20 ) +
+  geom_sf( aes( color = as.factor(distcat) ), size = 2 ) + 
+  labs( color = "Distance" ) +
+ geom_sf( data = tracks ) + 
+  geom_text( data = tracks, aes( X, Y, label = TranName ), size = 3 ) +
+ # geom_sf( data = NCA, alpha = 0 ) +
+   facet_wrap( ~Month )
+
+
+### 
+#transum %>% filter( Year == 2019 ) %>% 
+transum %>% filter( distcat == "rd" ) %>% 
+  ggplot(., aes(x = Month, y = totalN, 
+#                color = as.factor(distcat) )) +
+                color = as.factor(TranName) )) +
+  theme_bw( base_size = 15 ) +
+  geom_point() + geom_line() +
+  labs( color = "Distance" ) +
+  facet_wrap( ~as.factor(Year ) ) 
+###############################################################
+######    save your data                   ####################
+
 
 ####################### end of script #########################################
