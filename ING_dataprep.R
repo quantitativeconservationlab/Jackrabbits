@@ -51,6 +51,17 @@ rawlocs <- sf::st_read( paste0( datapath, "JackrabbitData_All.shp" ) )
 #import NCA shapefile
 NCA <- sf::st_read( "Z:/Common/QCLData/Habitat/NCA/GIS_NCA_IDARNGpgsSampling/BOPNCA_Boundary.shp")
 
+#import NLCD:
+habpath <- "Z:/Common/QCLData/Habitat/NLCSD_old/NLCD_LandCover_2016/NLCD_2016_Land_Cover_L48_20190424"
+
+# Import .img file as a raster file using the "raster" package.
+habrast <- raster::raster( habpath )
+
+# Check the data by making a basic plot.
+plot( habrast )
+
+# Import the legend for the 2016 NLCD data.
+nlcdlegend <- read.csv( paste( datadir, "NLCD_LandCover_2016/NLCD_Land_Cover_Legend.csv", sep = "") )
 #######################################################################
 ######## cleaning data ###############################################
 
@@ -154,6 +165,9 @@ rabbit_df <- rabbit_df %>%
 #years of sampling
 unique( rabbit_df$Year )
 
+unique(rabbit_df$Comments )
+
+
 #summarise counts for transect:
 transum <- rabbit_df %>% 
   group_by( TranName, Year, Month, distcat ) %>% 
@@ -182,22 +196,66 @@ ggplot(.) +
   labs( color = "Distance" ) +
  geom_sf( data = tracks ) + 
   geom_text( data = tracks, aes( X, Y, label = TranName ), size = 3 ) +
- # geom_sf( data = NCA, alpha = 0 ) +
+  geom_sf( data = NCA, alpha = 0 ) +
    facet_wrap( ~Month )
 
 
-### 
+###
+rabbit_df %>% filter( Year == 2019 ) %>% 
+  group_by( Year, Month ) %>% 
+  summarize( totalN = n() ) %>% 
+  ggplot(.) +
+  theme_classic( base_size = 20 ) +
+  geom_sf( color = "blue", size = 2 ) + 
+  #labs( color = "Distance" ) +
+  geom_sf( data = tracks ) + 
+  geom_text( data = tracks, aes( X, Y, label = TranName ), size = 3 ) +
+  geom_sf( data = NCA, alpha = 0 ) 
+
+
+#plot counts across time coloring months differently
+yrcounts <- rabbit_df %>% 
+  # group_by( Year, Month, geometry ) %>% 
+  # summarize( totalN = sum(NumInd) ) %>% 
+  ggplot(.) +
+  theme_classic( base_size = 12) +
+  theme( strip.background = element_blank() ) +
+  geom_sf( aes(color = as.factor(Month) ), size = 1 ) + 
+  labs( color = "Mth" ) +
+  geom_sf( data = tracks ) + 
+  geom_text( data = tracks, aes( X, Y, label = TranName ), size = 3 ) +
+  geom_sf( data = NCA, alpha = 0 ) +
+  facet_wrap( ~ Year )
+
+
 #transum %>% filter( Year == 2019 ) %>% 
-transum %>% filter( distcat == "rd" ) %>% 
+countsXmth <- transum %>% #filter( distcat == "rd" ) %>% 
   ggplot(., aes(x = Month, y = totalN, 
 #                color = as.factor(distcat) )) +
                 color = as.factor(TranName) )) +
   theme_bw( base_size = 15 ) +
+  theme( strip.background = element_blank() ) +
   geom_point() + geom_line() +
   labs( color = "Distance" ) +
   facet_wrap( ~as.factor(Year ) ) 
 ###############################################################
 ######    save your data                   ####################
+#save plots
+tiff( 'annualcounts.tiff',
+      height = 25, width = 28, units = 'cm', compression = "lzw", 
+      res = 400 )
+yrcounts
+dev.off()
 
+tiff( 'countsXmonth.tiff',
+      height = 25, width = 28, units = 'cm', compression = "lzw", 
+      res = 400 )
+countsXmth
+dev.off()
 
+#save cleaned shapefile
+sf::st_write( rabbit_df, paste0( datapath, "clean_rabbitdf.shp" ), 
+              driver = "ESRI Shapefile"  )
+
+save.image( "PrepWorkspace.RData" )
 ####################### end of script #########################################
