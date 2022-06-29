@@ -14,6 +14,7 @@ options( dplyr.width = Inf, dplyr.print_min = 100 )
 library( sf ) #for polygons and point data
 library( raster ) #for raster manipulation
 library( rasterVis ) #for raster visualization
+library( terra ) #for raster vis and manipulation 
 ## end of package load ###############
 
 ###################################################################
@@ -24,6 +25,7 @@ getwd()
 
 #set path to habitat data
 habpath <- "Z:/Common/QCLData/Habitat/"
+datapath <- "Z:/Common/Jackrabbits/"
 
 # Import .img file as a raster file using the "raster" package.
 shrubs <- raster::raster( paste0( habpath, 
@@ -61,11 +63,31 @@ NCA_buf <- NCA %>% sf::st_buffer( dist =5e3 )
 NCA_trans <- sf::st_transform( NCA_buf, st_crs( shrubs ) ) 
 #compare outline of trasformed polygon:
 sf::st_bbox( NCA_trans )
+# Note that transforming (projecting) raster data is fundamentally #
+#different from transforming vector data. Vector data can be transformed #
+#and back-transformed without loss in precision and without changes in #
+#the values. This is not the case with raster data. In each transformation#
+#the values for the new cells are estimated in some fashion. Therefore, #
+#if you need to match raster and vector data for analysis, #
+#you should generally transform the vector data. # 
 
 #crop raster to buffered NCA if you have a raster object:
 shrub_cropped <- raster::crop( shrubs, NCA_trans )
 #crop invasive raster:
 inv_cropped <- raster::crop( invasives, NCA_trans )
+# Now that we have cropped it to the appropriate area it should be faster #
+# to process eventhough we are still using raster #
+
+#view shrubs
+shrub_cropped
+#Plot sagebrush
+terra::plot( shrub_cropped, main = "Native shrubs (2020)" )
+#or 
+rasterVis::levelplot( shrub_cropped )
+#Note that the max observed percentage of sagebrush ~70 %
+
+#invasives
+rasterVis::levelplot( inv_cropped )
 
 #extracting habitat data for our kms:
 
