@@ -105,6 +105,24 @@ rasterVis::levelplot( shrub_cropped )
 #invasives
 rasterVis::levelplot( inv_cropped )
 
+###buffer lines to get habitat at the site level ######
+site_buf <- routes %>% 
+  sf::st_buffer( dist = 5000 )
+#transform to extract hab
+site_trans <- sf::st_transform( site_buf, st_crs( shrubs ) )
+###play around with the distance value to whatever is #
+#suitable #
+site_shrub <- raster::extract( x = shrub_cropped, 
+                   site_trans, 
+           fun  = mean, na.rm = TRUE )
+#extract invasive for the sites
+site_inv <- raster::extract( x = inv_cropped, 
+                 site_trans, 
+               fun  = mean, na.rm = TRUE )
+#combine to site shapefile
+site_cover <- cbind( site_buf, site_shrub, site_inv )
+site_cover 
+################################################
 #extracting habitat data for our kms:
 # Start by creating a buffer aroundt the road tracks: 
 km_buf <- routes %>% 
@@ -129,7 +147,7 @@ head(rm_trans)
 rm_trans$Site <- routes$site_name[1]
 #now use loop to correctly place other site names:
 for( i in 2:length(routes$site_name) ){
-rm_trans$Site[polids[[1]]] <- routes$site_name[i]
+rm_trans$Site[polids[[i]]] <- routes$site_name[i]
 }
 #repeat process with jackrabbit locations:
 #select IDs to keep
@@ -148,7 +166,7 @@ Jsites <- t(st_within(Jpoints, km_buf))
 Jpoints$Site <- routes$site_name[1]
 #now assign to site ids
 for( i in 2:length(routes$site_name) ){
-  Jpoints$Site[Jsites[[1]]] <- routes$site_name[i]
+  Jpoints$Site[Jsites[[i]]] <- routes$site_name[i]
 }
 #check
 head(Jpoints)
@@ -202,7 +220,8 @@ ggplot( NCA ) +
   theme_classic( ) +
   geom_sf() +
   geom_sf( data = routes ) +
-  geom_sf( data = km_buf, color = "blue" )
+  #geom_sf( data = km_buf, color = "blue" )
+  geom_sf( data = site_buf, color = "blue" )
 
 #zooming to transects:
 ggplot( km_buf ) +
@@ -215,13 +234,18 @@ ggplot( km_buf ) +
 #plotting cover
 ggplot( alldf ) +
   theme_classic( base_size = 17) +
-  geom_histogram( aes(x = shrub_vals, fill = use) )
+  geom_histogram( aes(x = shrub_vals, fill = use) ) +
+  facet_wrap( ~Site )
 #invasive species                  
 ggplot( alldf ) +
   theme_classic( base_size = 17) +
- # geom_histogram( aes(x = inv_vals, fill = use) )
- geom_point( aes( x = inv_vals, y = shrub_vals, color = use ))
+  geom_point( aes( x = inv_vals, y = shrub_vals, color = use ))
 
+ ggplot( alldf ) +
+   theme_classic( base_size = 17) +
+   geom_histogram( aes(x = inv_vals, fill = use) ) +
+   facet_wrap( ~Site )
+ 
 ########
 ###########################################################
 ### Save desired results                                  #
