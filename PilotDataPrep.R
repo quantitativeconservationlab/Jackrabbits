@@ -99,8 +99,8 @@ sitedf
 #standardise site names:
 sitedf$Site[ grep( "butte", sitedf$Site, ignore.case = TRUE, value = FALSE)] <- "Bigfoot"
 sitedf$Site[ grep( "comb", sitedf$Site , ignore.case = TRUE, value = FALSE)] <- "Combined"
-sitedf$Site[ grep( "Stand",sitedf$Site, ignore.case = TRUE, value = FALSE)] <- "Standifor"
 
+unique(sitedf$Site)
 #combine date and time and format to lubridate:
 sitedf$date <- lubridate::dmy_hm( paste( sitedf$Date, sitedf$Start_time),
                    tz = "MST" )
@@ -117,14 +117,15 @@ head( alldf ); dim( alldf )
 
 #combine and visualise data
 alldf %>% 
-  #group_by( Site, Km, Period ) %>% 
-  group_by( Site, Km, Night ) %>% 
+  #group_by( Site, Km, Team ) %>% 
+  group_by( Site, Km, Team, Night ) %>% 
   #group_by( Site, Km ) %>% 
   #summarise( counts = mean(Jackrabbits) ) %>% 
   summarise( counts = max( Jackrabbits ) ) %>% 
   ggplot( ., aes( x = Km, y = counts, color = as.factor(Night) ) ) +
   #ggplot( ., aes( x = Km, y = counts) ) +
-    geom_line( size = 2 ) + 
+    geom_line( aes( linetype = Team ), size = 2 ) + 
+  #geom_line( size = 2 ) + 
     theme_bw( base_size = 17 ) +
     facet_wrap( ~Site )
 
@@ -175,4 +176,8 @@ alldf %>%
 
 #correlation among temperature predictors 
 
+############### save data ######################################
+
+# save cleaned sitedf
+write.csv( x = sitedf, file = "Sitedf.csv" )
 ############### end of script #################################
