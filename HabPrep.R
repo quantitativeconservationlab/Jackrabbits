@@ -227,7 +227,7 @@ ggplot( NCA ) +
 ggplot( km_buf ) +
   theme_classic( ) +
   geom_sf() +
-  geom_sf( data = rabbits, color = "red" ) +
+ # geom_sf( data = rabbits, color = "red" ) +
   geom_sf( data = rm_pnts, color = "black" ) +
   geom_sf(data = Jpoints, color = "blue" ) 
 

@@ -76,27 +76,118 @@ m0 <- glmmTMB( use ~ 1 +
 #compare models using AIC
 anova( m1, m0, mslps )
 
-# estimate 95% CIs for fixed effects of top model
-confint( m1 ) #uses the Wald method
-
 #calculate marginal R^2 for random effects only (R2m) and the whole model
 # including fixed and random (R2c)
-MuMIn::r.squaredGLMM( m1 )
+MuMIn::r.squaredGLMM( mslps )
 #What do these values tell us
 
 # Interpreting results ###
-
-# 
-# since we only have one predictor we don't have to account for
-# others in the model and can just exponentiate it to compare the #
-# relative intensity or rate of use of two locations that differ by 1 
-# SD unit of the explanatory variable but are otherwise equivalent - i.e. #
-# they are equally accessible and have identical values for all #
-# other explanatory variables. # 
+# extract relative selection strength of our habitat 
+# variables averaged across all sites
 exp( glmmTMB::fixef( mslps )$cond[2] )
 exp( glmmTMB::fixef( mslps )$cond[3] )
-# this reflects the relative selection strength 
+# interpretation is how many more times a jackrabbit is 
+# using each particular habitat
+# Since we know random slopes are important. These estimates#
+# are actually not that meaningful. Instead let's look at #
+# what site-level relationships tell us:
 
+#To do this we could estimate the change in the average probability of #
+#selection as we change one of the habitat covariates #
+# while averaging over other habitat covariates according#
+# to their availability as per Avgar et al. 2017. #
+
+# however, let's start simple by looking at partial prediction#
+#plots for our sites. 
+
+#First start by extracting random effect estimates from top model:
+redf <- as.data.frame(ranef(mslps, condVar = FALSE))
+#view
+redf
+#add fixed effects
+redf$effects <- redf$condval + fixef(mslps)$cond[1] 
+#replace apppropriate site values
+redf$effects[which(redf$term == "shrub_sc" )] <-  
+  redf$condval[which(redf$term == "shrub_sc" )] + 
+    fixef(mslps)$cond[2] 
+redf$effects[which(redf$term == "inv_sc" )] <-  
+  redf$condval[which(redf$term == "inv_sc" )] + 
+    fixef(mslps)$cond[3] 
+
+#check
+redf
+#add nice habitat names
+redf <- redf %>% 
+  dplyr::mutate( habitat = ifelse( term == "shrub_sc",
+      "Shrubs", "Invasive annuals" ) )
+#check
+redf
+
+#view
+ggplot( redf[5:12,], aes( x = grp, y = exp(effects) ) ) +
+  theme_bw( base_size = 17 ) + 
+  labs( x = "Sites", y = "Relative selection strength" )+
+  geom_point() +
+  facet_wrap( ~habitat )
+
+
+#what range of habitat values do we have
+min( alldf$shrub_vals ); max( alldf$shrub_vals )
+min( alldf$inv_vals ); max( alldf$inv_vals )
+
+#plot partial predictions
+sl <- 50
+int <- rep( 1, sl )
+shrb <- seq( min( alldf$shrub_vals ), max( alldf$shrub_vals ),
+             length.out = sl )
+shrb_sc <- scale(shrb )
+invs <- seq( min( alldf$inv_vals ), max( alldf$inv_vals ),
+             length.out = sl )
+invs_sc <- scale( invs )
+#estimate prob of use for shrub
+shrb_resp <- plogis( cbind( redf$effects[1:4], redf$effects[5:8]) %*%
+                    t(cbind( int, shrb_sc ) ) )
+# shrb_resp <- plogis( cbind( 1, redf$effects[5:8]) %*%
+#                     t(cbind( int, shrb_sc ) ) )
+
+#for invasives
+invs_resp <- plogis( cbind( redf$effects[1:4], redf$effects[9:12]) %*%
+                    t(cbind( int, invs_sc ) ) )
+# invs_resp <- plogis( cbind( 1, redf$effects[9:12]) %*%
+#                     t(cbind( int, invs_sc ) ) )
+
+#create dataframe to store predicted results
+resultsdf <- data.frame( t( shrb_resp ), t(invs_resp),
+  shrb, shrb_sc,  invs,invs_sc )
+     
+#add site names
+colnames( resultsdf)[1:4] <- paste( redf$grp[1:4], "shrub", sep = "_" )
+colnames( resultsdf)[5:8] <- paste( redf$grp[5:8], "invasives", sep = "_" )
+
+#view
+tail(resultsdf );dim(resultsdf )
+#convert to long format for plotting
+rsdf <- pivot_longer( data = resultsdf, cols = 1:8, 
+            names_to = c( "Site", "Habitat" ),
+            names_sep = "_",
+            values_to = "Use" )
+
+rsdf
+
+#plot
+ggplot( rsdf ) +
+  theme_classic( base_size = 17 ) +
+  geom_line( aes( x = shrb, y = Use, color = Site ),
+             size = 2 ) +
+  #geom_line( aes( x = shrb, y = Use, color = Site ) ) +
+  facet_wrap( ~Habitat )
+
+#what variability in sites
+alldf %>% group_by(Site ) %>% 
+  summarise( min_shrub = min(shrub_vals),
+             max_shrub = max(shrub_vals), 
+             min_inv = min(inv_vals),
+             max_inv = max(inv_vals))
 
 ##########################################################
 ### Save desired results                                  #
