@@ -186,7 +186,7 @@ all_trans <- bind_rows( all_trans, rm_trans )
 tail(all_trans); dim( all_trans )
 #now that we have all points we can extract habitat
 #define buffer around points
-buf <- 100
+buf <- 200
 shrub_vals <- raster::extract( x = shrub_cropped, 
                   all_trans, buffer = buf,
                 fun  = mean, na.rm = TRUE )
@@ -250,7 +250,7 @@ ggplot( alldf ) +
 ###########################################################
 ### Save desired results                                  #
 # we can save alldf as shapefile:
-st_write( alldf, "allpoints.shp" )
+st_write( alldf, "allpoints_200m.shp" )
 
 #save workspace if in progress
 save.image( 'HabResults.RData' )
