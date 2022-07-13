@@ -14,6 +14,7 @@ options( dplyr.width = Inf, dplyr.print_min = 100 )
 library( sf ) #for polygons and point data
 library( raster ) #for raster manipulation
 library( rasterVis ) #for raster visualization
+library(RColorBrewer) #add color palette for plotting
 library( terra ) #for raster vis and manipulation 
 ## end of package load ###############
 
@@ -79,6 +80,7 @@ NCA_buf <- NCA %>% sf::st_buffer( dist =5e3 )
 NCA_trans <- sf::st_transform( NCA_buf, st_crs( shrubs ) ) 
 #compare outline of trasformed polygon:
 sf::st_bbox( NCA_trans )
+
 # Note that transforming (projecting) raster data is fundamentally #
 #different from transforming vector data. Vector data can be transformed #
 #and back-transformed without loss in precision and without changes in #
@@ -123,7 +125,8 @@ site_inv <- raster::extract( x = inv_cropped,
 site_cover <- cbind( site_buf, site_shrub, site_inv )
 site_cover 
 ################################################
-#extracting habitat data for our kms:
+#extracting habitat data:
+###################
 # Start by creating a buffer aroundt the road tracks: 
 km_buf <- routes %>% 
   sf::st_buffer( dist = 50 )
@@ -215,13 +218,38 @@ cor( cbind( alldf$shrub_vals, alldf$inv_vals) )
 
 ##########################################################
 ######### visualize data #############################
+#plot raster with polygons in raster vis
+# need to have everything on same CRS
+#convert outline to match raster crs
+NCA_poly <- sf::st_transform( NCA, st_crs( shrubs ))
+#Need to turn sf objects to spatial objects:
+NCA_poly <- as(st_geometry(NCA_poly), Class="Spatial")
+j_plot <- as( st_geometry( j_trans ), Class="Spatial")
+# select color palette for raster
+mapTheme <-rasterTheme( region =  RColorBrewer::brewer.pal(8,"Reds"))
+#plot invasive habitat raster
+rp <- rasterVis::levelplot( inv_cropped,
+                      margin=F, 
+                        #     axes = FALSE,
+                        # title.gpar = list(cex = 1,
+                        #                 font = 2),
+                            par.settings = mapTheme ) +
+  latticeExtra::layer(sp.lines( NCA_poly, col = "gray40",
+                                lwd = 3 ) ) +
+  latticeExtra::layer(sp.points( j_plot, col = "black", 
+                                cex = 1 ))
+
 # visualize polygon data
-ggplot( NCA ) +
-  theme_classic( ) +
-  geom_sf() +
-  geom_sf( data = routes ) +
+  ggplot(NCA ) + 
+  theme_classic( base_size = 18 ) +
+  geom_sf( size = 2, alpha = 0 ) +
+  geom_sf( data = rm_pnts, 
+           color = "black", size = 1 ) +
+  #geom_sf( data = routes ) +
+  geom_sf(data = Jpoints, 
+          color = "blue", size = 2 )
   #geom_sf( data = km_buf, color = "blue" )
-  geom_sf( data = site_buf, color = "blue" )
+ #geom_sf( data = site_buf, color = "blue" )
 
 #zooming to transects:
 ggplot( km_buf ) +
@@ -254,5 +282,12 @@ st_write( alldf, "allpoints_200m.shp" )
 
 #save workspace if in progress
 save.image( 'HabResults.RData' )
+
+#save raster map
+tiff( 'invmap.tiff',
+      height = 15, width = 18, units = 'cm', compression = "lzw", 
+      res = 600 )
+rp
+dev.off()
 
 ####################### end of script #########################
