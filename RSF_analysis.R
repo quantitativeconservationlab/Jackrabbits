@@ -27,7 +27,7 @@ library(MuMIn) #for model validation
  ###################################################################
  #### Load or create data -----------------------------------------
  
-alldf <- sf::st_read( "allpoints.shp" ) 
+alldf <- sf::st_read( "allpoints_30m.shp" ) 
 
 ######## preparing data ###############################################
 
@@ -75,7 +75,7 @@ m0 <- glmmTMB( use ~ 1 +
 
 #compare models using AIC
 anova( m1, m0, mslps )
-
+anova( m1, mslps )
 #calculate marginal R^2 for random effects only (R2m) and the whole model
 # including fixed and random (R2c)
 MuMIn::r.squaredGLMM( mslps )
@@ -132,16 +132,16 @@ ggplot( redf[5:12,], aes( x = grp, y = exp(effects) ) ) +
 
 
 #what range of habitat values do we have
-min( alldf$shrub_vals ); max( alldf$shrub_vals )
-min( alldf$inv_vals ); max( alldf$inv_vals )
+min( alldf$shrub_vals, na.rm = TRUE ); max( alldf$shrub_vals, na.rm = TRUE  )
+min( alldf$inv_vals, na.rm = TRUE  ); max( alldf$inv_vals, na.rm = TRUE  )
 
 #plot partial predictions
 sl <- 50
 int <- rep( 1, sl )
-shrb <- seq( min( alldf$shrub_vals ), max( alldf$shrub_vals ),
+shrb <- seq( min( alldf$shrub_vals, na.rm = TRUE  ), max( alldf$shrub_vals, na.rm = TRUE  ),
              length.out = sl )
 shrb_sc <- scale(shrb )
-invs <- seq( min( alldf$inv_vals ), max( alldf$inv_vals ),
+invs <- seq( min( alldf$inv_vals, na.rm = TRUE  ), max( alldf$inv_vals, na.rm = TRUE  ),
              length.out = sl )
 invs_sc <- scale( invs )
 #estimate prob of use for shrub
@@ -184,14 +184,15 @@ ggplot( rsdf ) +
 
 #what variability in sites
 alldf %>% group_by(Site ) %>% 
-  summarise( min_shrub = min(shrub_vals),
-             max_shrub = max(shrub_vals), 
-             min_inv = min(inv_vals),
-             max_inv = max(inv_vals))
+  summarise( min_shrub = min(shrub_vals, na.rm = TRUE ),
+             max_shrub = max(shrub_vals, na.rm = TRUE ), 
+             min_inv = min(inv_vals, na.rm = TRUE ),
+             max_inv = max(inv_vals, na.rm = TRUE ))
 
 ##########################################################
 ### Save desired results                                  #
 # we can save the movement model results
 #save workspace if in progress
-save.image( 'RSFresults.RData' )
+save.image( 'RSFresults_30m.RData' )
+
 ############# end of script  ##################################

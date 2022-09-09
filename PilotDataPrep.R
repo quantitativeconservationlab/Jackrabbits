@@ -58,7 +58,7 @@ head(rawrecs)
 # in this case we focus on jackrabbits only
 datadf <- rawrecs %>% 
   #simplify some column names also
-  dplyr::select( Survey_ID = ï..Survey_ID,
+  dplyr::select( Survey_ID, #= ï..Survey_ID,
                  Km = Km_markingID,
                  JJ, JA, Junkn )
 
@@ -73,7 +73,7 @@ datadf <- datadf %>%
 #now clean site info
 sitedf <- siteraw %>% 
   #import columns of interest and update desired names
-  dplyr::select( Survey_ID = ï..Survey_ID, 
+  dplyr::select( Survey_ID,# = ï..Survey_ID, 
           Period = Crew_name, 
           Site, tempF = Start_temp.F., 
           WindKmHr = Start_wind.km.h.,
