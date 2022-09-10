@@ -1,8 +1,9 @@
 
 # Data Background/Description ---------------------------------------------
 ##This script was developed to clean and visualize black-tailed jackrabbit 
-##count data collected using spotlight surveys conducted at dawn and dusk 
-##during 8 day period in August 2022.
+##count data collected using spotlight surveys conducted at dusk (10pm-2am) 
+#and dawn(2am-6am) in the NCA by two teams of 2 trained technicians 
+#(1 lead and 1 undergrad.) during 8 day period in August 2022. 
 
 
 # Pseudo Code --------------------------------------------------------------
@@ -34,41 +35,41 @@
 
 
 # Setup -------------------------------------------------------------------
-##Set up your workspace and load relevant packages -----------
-# Clean your workspace to reset your R environment. 
+## Set up your work space and load relevant packages -----------
+
+# Clean your work space to reset your R environment. 
 rm( list = ls() )
 
 # load packages relevant to this script:
 library( tidyverse ) #package for easy data manipulation
-#install.packages("tidyverse") #Use this is package is not already installed or 
-#is not loaded properly 
+#install.packages("tidyverse") #Use this is package is not already installed or is not loaded properly 
+library( lubridate ) #package for easy date and time manipulation
+library( sf ) #package for spatial data manipulation 
 
 # set option to see all columns and more than 10 rows
 options( dplyr.width = Inf, dplyr.print_min = 100 )
-library( lubridate ) #easy date and time manipulation
-library( sf ) #for spatial data
+
 
 ## End of package load-------------
 
 
 # Loading/Creating Data ---------------------------------------------------
-## Load or create data -----------------------------------------
+## Load or create data -----------
+
 # Set working directory. This is the path to your Rstudio folder for this 
 # project. If you are in your correct Rstudio project then it should be:
 getwd() 
 ##LC WD:"C:/Users/leticiacamacho/Documents/BTJR_MSProject/Rcode/Spotlights_Hab_2022/Jackrabbits"
 
-
-
-
 # if so then:
-workdir <- getwd()
+workdir <- getwd() #creating working directory as an object so you can call it easier - without having to type it out
 
 # set path to where you can access data in your computer. #
 # Note that the path will be different in yours than other's.#
 datapath <- "Z:/Common/Jackrabbits"
 
-#### Import km-level records:
+
+## Import km-level records:
 # 
 # rawrecs <- read.csv( file = paste0( datapath, 
 #                                     'Records.csv'),  
@@ -76,9 +77,12 @@ datapath <- "Z:/Common/Jackrabbits"
 #                      na.strings = c(""," ","NA","Missing"), 
 #                      # includes column heading
 #                      header = TRUE )
+#rawrec = 
 
 
-      ##HELP:##############: Cannot open file Warning Message :
+      ##HELP:##############: HAVING TROUBLE CONNECTING TO THE Z DRIVE POSSIBLY ON MY END? - WILL LEAVE THIS CODE FOR JC OR OTHERS CONNECTED TO SERVER TO ACCESS DATA EASILT BUT WILL RUN WITH DATA LOCALLY ON MY COMPUTER FOR NOW
+
+#Cannot open file Warning Message :
 #In file(file, "rt") :
 #cannot open file 'Z:/Common/Jackrabbits/BTJR_Aug22_Spotlight.SurveysRecords_Aug2022.csv': No such file or directory
 
