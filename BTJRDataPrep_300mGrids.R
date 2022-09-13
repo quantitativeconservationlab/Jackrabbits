@@ -85,43 +85,74 @@ library(lubridate)#used to organize and format date and time data
 getwd() #"C:/Users/leticiacamacho/Documents/BTJR_MSProject/Rcode/Spotlights_Hab_2022/Jackrabbits"
 
 #set data paths:
-habpath <- "Z:/Common/QCLData/Habitat/" #Creating pathway to call the habitat NLCD data from the common drive
-datapath <- "Z:/Common/Jackrabbits/BTJR_Aug22Spotlight.Surveys/" #Creating pathway to call the BTJR data from the common drive
-rastpath<-"Z:/Common/QCLData/Habitat/NLCD_new/NCA_raster_summaries_300m/"#creating pathway to call the 300x300m grid cells of NCA
+#Creating pathway to call the habitat NLCD data from the common drive
+habpath <- "Z:/Common/QCLData/Habitat/" 
+#Creating pathway to call the BTJR data from the common drive
+datapath <- "Z:/Common/Jackrabbits/BTJR_Aug22_Spotlight.Surveys/" 
+#creating pathway to call the 300x300m grid cells of NCA
+rastpath<-"Z:/Common/QCLData/Habitat/NLCD_new/NCA_raster_summaries_300m/"
 
 
 #Importing Data:
 
 #import 300mx300m grid cell NCA raster from NLCD_new folder:
-NCAgrid300m<- sf::st_read( paste0(rastpath,
-                                  "c20_agg")) ####################### MISSING SOMETHING HERE ####################
-#note that they are all in different utms, so we need make sure all spatial data imported match. 
+NCAgrid300m<- raster::raster( paste0(rastpath,
+                                  "c20_agg.img")) 
+
+####################### MISSING SOMETHING HERE ####################
+#note that they are all in different utms, so we need make sure all spatial 
+#data imported match. 
 #NCAGRID300M Projected CRS: - CANT FIND FILE AS OF RIGHT NOW
 
-#Another way to check the crs:
-crstracks<-sf::st_crs( NCAgrid300m )
+
+##Another way to check the crs:
+#crstracks <- sf::st_crs( NCAgrid300m )
 
 #import NCA shapefile from habitat folder:
 NCAboundary <- sf::st_read( paste0( habpath, 
-                            "NCA/GIS_NCA_IDARNGpgsSampling/BOPNCA_Boundary.shp"))
+          "NCA/GIS_NCA_IDARNGpgsSampling/BOPNCA_Boundary.shp"))
 #note that they are all in different utms, so we need make sure they all match. 
 #NCAboundary Projected CRS: NAD83 / UTM zone 11N + NAVD88 height
 #Geometry type: POLYGON, 1 feature and 10 fields,
 
 #Import rabbit GPS data: 
-#dawnrabbits<-read.csv(file = paste0( datapath, "BTJR_Dawn_Aug22.csv"), na.strings = c(""," ","NA","Missing"), header = TRUE)
-#duskrabbits<-read.csv(file = paste0( datapath, "BTJR_Dusk_Aug22.csv"), na.strings = c(""," ","NA","Missing"), header = TRUE)
-##################### I DONT KNOW WHY ABOVE CODE ISNT WORKING SO SAVED TO COMPUTER AND NEED HELP 
-dwnrab<-read.csv("BTJR_Dawn_Aug22.csv",na.strings = c(""," ","NA","Missing"), header = TRUE )
+#dawnrabbits<-read.csv(file = paste0( datapath, "BTJR_Dawn_Aug22.csv"), 
+#na.strings = c(""," ","NA","Missing"), header = TRUE)
+#duskrabbits<-read.csv(file = paste0( datapath, "BTJR_Dusk_Aug22.csv"), 
+#na.strings = c(""," ","NA","Missing"), header = TRUE)
+##################### I DONT KNOW WHY ABOVE CODE ISNT WORKING SO 
+#SAVED TO COMPUTER AND NEED HELP 
+#rabbit locations 
+dwnrab <- read.csv( "BTJR_Dawn_Aug22.csv", 
+                    na.strings = c(""," ","NA","Missing"),
+                    header = TRUE )
+
+# routes
+route_S <- sf::st_read( paste0(datapath, 
+      "BTJR_Aug22_Spotlights_shp/Bigfoot_Simco_transect.shp" ) )
+
+plot(route_S )
+route_S
+
+#import north route
+
 #######################THE CSV IS ALL MESSED UP HERE ######################
 
 #importing GPS routes:
 #i THINK WE NEED SHAPE FILES?
 #THE CSVS AND NOT SEPERATING OUT IN TO COLUMNS AND NEED HELP FIGURING OUT WHY OR HOW TO FIX IT ##############
 
+####################### preparing data #################
+route_S <- route_S %>% 
+  #keep columns of interest only
+  dplyr::select( ID, trksegID, lat, lon, time, geometry )
 
+#view
+route_S
 
-
+#convert to line 
+#check
+#then match crs to raster
 
 
 
