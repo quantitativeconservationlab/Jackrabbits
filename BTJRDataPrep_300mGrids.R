@@ -58,6 +58,7 @@
 
 
 # Setup -------------------------------------------------------------------
+
 ## Set up your work space and load relevant packages -----------
 
 # Clean your work space to reset your R environment. 
@@ -67,9 +68,10 @@ library( tidyverse ) #package for easy data manipulation
 #install.packages("tidyverse") #Use this is package is not already installed or is not loaded properly 
 # set option to see all columns and more than 10 rows
 options( dplyr.width = Inf, dplyr.print_min = 100 )#for visual aid - easier to view data
-library( sf ) #package for spatial data manipulation 
+library( sf )#package for spatial data manipulation for vector data 
+#install.packages("sf")
 library( raster ) #for raster manipulation
-###Can create raster layers objects using raster function within raster package
+#Can create raster layers objects using raster function within raster package:
 library( rasterVis ) #for raster visualization
 library(RColorBrewer)
 library( terra ) #for raster vis and manipulation 
@@ -84,7 +86,9 @@ library(lubridate)#used to organize and format date and time data
 # project. If you are in your correct Rstudio project then it should be:
 getwd() #"C:/Users/leticiacamacho/Documents/BTJR_MSProject/Rcode/Spotlights_Hab_2022/Jackrabbits"
 
+
 #set data paths:
+
 #Creating pathway to call the habitat NLCD data from the common drive
 habpath <- "Z:/Common/QCLData/Habitat/" 
 #Creating pathway to call the BTJR data from the common drive
@@ -93,66 +97,131 @@ datapath <- "Z:/Common/Jackrabbits/BTJR_Aug22_Spotlight.Surveys/"
 rastpath<-"Z:/Common/QCLData/Habitat/NLCD_new/NCA_raster_summaries_300m/"
 
 
+
 #Importing Data:
 
 #import 300mx300m grid cell NCA raster from NLCD_new folder:
 NCAgrid300m<- raster::raster( paste0(rastpath,
                                   "c20_agg.img")) 
 
-####################### MISSING SOMETHING HERE ####################
-#note that they are all in different utms, so we need make sure all spatial 
-#data imported match. 
-#NCAGRID300M Projected CRS: - CANT FIND FILE AS OF RIGHT NOW
+#e need make sure all spatial data imported match. - will do this in later step 
+#since this is a raster file and the other files we are currently working with
+#are vector data we will fit the crs to match this raster 
+plot(NCAgrid300m)
 
-
-##Another way to check the crs:
-#crstracks <- sf::st_crs( NCAgrid300m )
+##Another way to check the crs of any spatial file:
+sf::st_crs( NCAgrid300m )
 
 #import NCA shapefile from habitat folder:
 NCAboundary <- sf::st_read( paste0( habpath, 
           "NCA/GIS_NCA_IDARNGpgsSampling/BOPNCA_Boundary.shp"))
-#note that they are all in different utms, so we need make sure they all match. 
+#Note that this is a polygon or vector file so we will need to make sure it 
+#matches the above rater NCAboundary layer/file
 #NCAboundary Projected CRS: NAD83 / UTM zone 11N + NAVD88 height
 #Geometry type: POLYGON, 1 feature and 10 fields,
+plot(NCAboundary)
 
-#Import rabbit GPS data: 
-#dawnrabbits<-read.csv(file = paste0( datapath, "BTJR_Dawn_Aug22.csv"), 
-#na.strings = c(""," ","NA","Missing"), header = TRUE)
-#duskrabbits<-read.csv(file = paste0( datapath, "BTJR_Dusk_Aug22.csv"), 
-#na.strings = c(""," ","NA","Missing"), header = TRUE)
-##################### I DONT KNOW WHY ABOVE CODE ISNT WORKING SO 
-#SAVED TO COMPUTER AND NEED HELP 
-#rabbit locations 
-dwnrab <- read.csv( "BTJR_Dawn_Aug22.csv", 
-                    na.strings = c(""," ","NA","Missing"),
-                    header = TRUE )
 
-# routes
+#Importing Survey Routes:
+
+#Importing Southern Routes:
 route_S <- sf::st_read( paste0(datapath, 
       "BTJR_Aug22_Spotlights_shp/Bigfoot_Simco_transect.shp" ) )
-
+#Note that this is a polygon or vector file so we will need to make sure it 
+#matches the above rater NCAboundary layer/file
 plot(route_S )
 route_S
 
-#import north route
+#Import Northern Route:
+route_N <- sf::st_read( paste0(datapath, 
+                               "BTJR_Aug22_Spotlights_shp/Standifer_Combined_transect.shp" ) )
+plot(route_N )
+route_N
 
-#######################THE CSV IS ALL MESSED UP HERE ######################
 
-#importing GPS routes:
-#i THINK WE NEED SHAPE FILES?
-#THE CSVS AND NOT SEPERATING OUT IN TO COLUMNS AND NEED HELP FIGURING OUT WHY OR HOW TO FIX IT ##############
 
-####################### preparing data #################
+# Preparing Data: ---------------------------------------------------------
+
+#Selecting columns of interest for routes:
+#Southern Routes:
 route_S <- route_S %>% 
   #keep columns of interest only
-  dplyr::select( ID, trksegID, lat, lon, time, geometry )
+  dplyr::select( ID, trksegID, lat, lon, geometry )
 
 #view
 route_S
 
-#convert to line 
+#Northern Routes:
+route_N <- route_N %>% 
+  #keep columns of interest only
+  dplyr::select( ID, trksegID, lat, lon, geometry )
+
+#view
+route_N
+
+
+#convert geometrey from points to a line:
+
+#southern route:
+class(st_geometry(route_S)) #"sfc_POINT" "sfc"
+#converting from point to line string:
+route_S_line<-route_S$geometry %>% 
+  st_coordinates("sfc") %>% 
+  st_linestring()
+
 #check
-#then match crs to raster
+class(st_geometry(route_S_line))#"sfc_LINESTRING" "sfc"
+plot(route_S_line)
+
+
+#northern route:
+class(st_geometry(route_N))#"sfc_POINT" "sfc"
+route_N_line<-route_N$geometry %>% 
+  st_coordinates("sfc") %>% 
+  st_linestring()
+#check
+class(st_geometry(route_N_line))#"sfc_LINESTRING" "sfc"
+plot(route_N_line)
+
+
+
+
+#Match crs of all vector data to raster layer crs:
+
+#identify what crs the data is currently in:
+sf::st_crs(route_N)#"WGS 84"
+sf::st_crs(route_S)#"WGS 84"
+sf::st_crs(NCAboundary)#"WGS 84"
+sf::st_crs(route_N_line)#NA
+sf::st_crs(route_S_line)#"NA"
+
+######### HELP: what do you do if the line i just created with my points from 
+#the GPS now made it so that the 
+####### WHY dont these lines now not have a crs???
+
+
+
+#create a version that matches coordinates of the predictor raster:
+NCAboundary <- sf:: st_transform( NCAboundary, st_crs( NCAgrid300m ) ) 
+route_S_line<- sf:: st_transform( route_S_line, st_crs( route_S) ) 
+route_N_line<- sf:: st_transform( route_S_line, st_crs( NCAgrid300m ) )
+#############HELP NOT WORKING FOR LINES BECASUE THEIR CRS=NA
+
+
+
+
+
+############### TRYING THIS APPROACH?:
+
+myfiles <- dir( paste0( datapath, rabpath ), 
+                pattern = '\\.shp', full.names = TRUE )
+
+# Read each shapefile and return a list of sf objects
+listOfShp <- lapply(myfiles, st_read)
+# Look to make sure they're all in the same CRS
+unique(sapply(listOfShp, crs))
+
+
 
 
 
@@ -162,11 +231,11 @@ route_S
 # Cleaning Data -----------------------------------------------------------
 
 
-#NEED TO DO ALOT OF WORK TO GET THE GPS RABBIT CATEGORIES ARE ALL THE SAME 
-#AND SEPERATED OUT IN TO INDIVUAL AGE, SPECIES, AND INCEDENTAL VS. ROUTE OBSERVATIONS - ITS IN THE NAMING SCHEME 
-# 
+#Cleaning Rabbit Observation Data (GPS Locations):
 
-
+#make sure all names are the same for obs. on site and incidentals. 
+#create separate df containing columns of interest
+#clean date and time format with lubridate package
 
 
 
