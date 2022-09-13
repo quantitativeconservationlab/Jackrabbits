@@ -98,6 +98,9 @@ NCAgrid300m<- sf::st_read( paste0(rastpath,
 #note that they are all in different utms, so we need make sure all spatial data imported match. 
 #NCAGRID300M Projected CRS: - CANT FIND FILE AS OF RIGHT NOW
 
+#Another way to check the crs:
+crstracks<-sf::st_crs( NCAgrid300m )
+
 #import NCA shapefile from habitat folder:
 NCAboundary <- sf::st_read( paste0( habpath, 
                             "NCA/GIS_NCA_IDARNGpgsSampling/BOPNCA_Boundary.shp"))
@@ -106,10 +109,31 @@ NCAboundary <- sf::st_read( paste0( habpath,
 #Geometry type: POLYGON, 1 feature and 10 fields,
 
 #Import rabbit GPS data: 
-dawnrabbits<-read.csv(file = paste0( datapath, "BTJR_Dawn_Aug22.csv"), na.strings = c(""," ","NA","Missing"), header = TRUE)
-duskrabbits<-read.csv(file = paste0( datapath, "BTJR_Dusk_Aug22.csv"), na.strings = c(""," ","NA","Missing"), header = TRUE)
+#dawnrabbits<-read.csv(file = paste0( datapath, "BTJR_Dawn_Aug22.csv"), na.strings = c(""," ","NA","Missing"), header = TRUE)
+#duskrabbits<-read.csv(file = paste0( datapath, "BTJR_Dusk_Aug22.csv"), na.strings = c(""," ","NA","Missing"), header = TRUE)
+##################### I DONT KNOW WHY ABOVE CODE ISNT WORKING SO SAVED TO COMPUTER AND NEED HELP 
+dwnrab<-read.csv("BTJR_Dawn_Aug22.csv",na.strings = c(""," ","NA","Missing"), header = TRUE )
+#######################THE CSV IS ALL MESSED UP HERE ######################
+
+#importing GPS routes:
+#i THINK WE NEED SHAPE FILES?
+#THE CSVS AND NOT SEPERATING OUT IN TO COLUMNS AND NEED HELP FIGURING OUT WHY OR HOW TO FIX IT ##############
 
 
+
+
+
+
+
+
+
+
+# Cleaning Data -----------------------------------------------------------
+
+
+#NEED TO DO ALOT OF WORK TO GET THE GPS RABBIT CATEGORIES ARE ALL THE SAME 
+#AND SEPERATED OUT IN TO INDIVUAL AGE, SPECIES, AND INCEDENTAL VS. ROUTE OBSERVATIONS - ITS IN THE NAMING SCHEME 
+# 
 
 
 
