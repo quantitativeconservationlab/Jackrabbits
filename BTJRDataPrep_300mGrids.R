@@ -169,6 +169,8 @@ route_S_line<-route_S$geometry %>%
   st_coordinates("sfc") %>% 
   st_linestring()
 
+route_S_line<-
+
 #check
 class(st_geometry(route_S_line))#"sfc_LINESTRING" "sfc"
 plot(route_S_line)
@@ -176,6 +178,7 @@ plot(route_S_line)
 
 #northern route:
 class(st_geometry(route_N))#"sfc_POINT" "sfc"
+
 route_N_line<-route_N$geometry %>% 
   st_coordinates("sfc") %>% 
   st_linestring()
@@ -205,7 +208,7 @@ sf::st_crs(route_S_line)#"NA"
 NCAboundary <- sf:: st_transform( NCAboundary, st_crs( NCAgrid300m ) ) 
 route_S_line<- sf:: st_transform( route_S_line, st_crs( route_S) ) 
 route_N_line<- sf:: st_transform( route_S_line, st_crs( NCAgrid300m ) )
-#############HELP NOT WORKING FOR LINES BECASUE THEIR CRS=NA
+.#############HELP NOT WORKING FOR LINES BECASUE THEIR CRS=NA
 
 
 
