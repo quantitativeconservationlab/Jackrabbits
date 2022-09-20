@@ -36,38 +36,20 @@
 #and the Guard's polygon habitat data 
 
 
-# READ/GET:
-#   (Input used when reading data )
-
-# PRINT,DISPLAY,SHOW:
-#   (Will show your output to a screen or the relevant output device)
-
-# COMPUTE,CALCULATE,DETERMINE:
-#   (Used to calc.the result of the expression) 
-
-# SET,INIT:
-#   (To initialize values)
-
-# INCREMENT,BUMP:
-#   (To incr.the value of a variable)
-
-# DECREMENT:
-#   (To reduce the value of a variable)
-
-
-
 
 # Setup -------------------------------------------------------------------
 
 ## Set up your work space and load relevant packages -----------
 
-# Clean your work space to reset your R environment. 
+## Clean your work space to reset your R environment. 
 rm( list = ls() )
-# load packages relevant to this script:
+
+## Load packages relevant to this script:
 library( tidyverse ) #package for easy data manipulation
-#install.packages("tidyverse") #Use this is package is not already installed or is not loaded properly 
+#install.packages("tidyverse") 
+#Use this is package is not already installed or is not loaded properly 
 # set option to see all columns and more than 10 rows
-options( dplyr.width = Inf, dplyr.print_min = 100 )#for visual aid - easier to view data
+options( dplyr.width = Inf, dplyr.print_min = 100 )#for visual aid 
 library( sf )#package for spatial data manipulation for vector data 
 #install.packages("sf")
 library( raster ) #for raster manipulation
@@ -77,7 +59,7 @@ library(RColorBrewer)
 library( terra ) #for raster vis and manipulation 
 library(lubridate)#used to organize and format date and time data 
 
-## End of package load-------------
+## End of package load -------------
 
 
 # Load and Create Data ----------------------------------------------------
@@ -87,7 +69,7 @@ library(lubridate)#used to organize and format date and time data
 getwd() #"C:/Users/leticiacamacho/Documents/BTJR_MSProject/Rcode/Spotlights_Hab_2022/Jackrabbits"
 
 
-#set data paths:
+## Set data paths:  -----------
 
 #Creating pathway to call the habitat NLCD data from the common drive
 habpath <- "Z:/Common/QCLData/Habitat/" 
@@ -98,25 +80,22 @@ rastpath<-"Z:/Common/QCLData/Habitat/NLCD_new/NCA_raster_summaries_300m/"
 
 
 
-#Importing Data:
+## Importing Data:  -----------
 
 #import 300mx300m grid cell NCA raster from NLCD_new folder:
 NCAgrid300m<- raster::raster( paste0(rastpath,
                                   "c20_agg.img")) 
 
-#e need make sure all spatial data imported match. - will do this in later step 
+#We need make sure all spatial data imported match. 
+#- will do this in later step 
+plot(NCAgrid300m)
 #since this is a raster file and the other files we are currently working with
 #are vector data we will fit the crs to match this raster 
-plot(NCAgrid300m)
 
-##Another way to check the crs of any spatial file:
-sf::st_crs( NCAgrid300m )
 
 #import NCA shapefile from habitat folder:
 NCAboundary <- sf::st_read( paste0( habpath, 
           "NCA/GIS_NCA_IDARNGpgsSampling/BOPNCA_Boundary.shp"))
-#Note that this is a polygon or vector file so we will need to make sure it 
-#matches the above rater NCAboundary layer/file
 #NCAboundary Projected CRS: NAD83 / UTM zone 11N + NAVD88 height
 #Geometry type: POLYGON, 1 feature and 10 fields,
 plot(NCAboundary)
@@ -139,8 +118,20 @@ plot(route_N )
 route_N
 
 
+## Import Rabbit Locations:
+rabsdawn_tot <- sf::st_read( paste0(datapath, 
+                            "BTJR_Aug22_Spotlights_shp/BTJR_Dawn_Aug22.shp") )
+
+rabsdusk_tot <- sf::st_read( paste0(datapath, 
+                                "BTJR_Aug22_Spotlights_shp/BTJR_Dusk_Aug22.shp") )
+
+str(rabsdawn_tot)
+str(rabsdusk_tot)
+
 
 # Preparing Data: ---------------------------------------------------------
+
+## Cleaning data:  -----------
 
 #Selecting columns of interest for routes:
 #Southern Routes:
@@ -160,31 +151,75 @@ route_N <- route_N %>%
 route_N
 
 
-#convert geometrey from points to a line:
+#Selecting columns of interest for rabbits:
 
+#dusk crew
+rabsdusk<- rabsdusk_tot %>% 
+  dplyr::select(ID, name,lat, lon, time, geometry)
+#view
+rabsdusk
+
+#dawn crew
+rabsdawn<- rabsdawn_tot %>% 
+  dplyr::select(ID, name,lat, lon, time, geometry)
+#view
+rabsdawn
+
+#Checking if there are differences in the rabbit naming scheme for each crew
+unique(rabsdusk$name) 
+#there are too many unique names because of the GPS's and the complicated
+#in field naming scheme. Need to simplify this 
+
+
+
+## Manipulating data:  -----------
+
+##convert geometry from points to a line for routes :
 #southern route:
-class(st_geometry(route_S)) #"sfc_POINT" "sfc"
+
+#checking current geometry classification
+class(st_geometry(route_S)) 
+#"sfc_POINT" "sfc"
+
+
 #converting from point to line string:
-route_S_line<-route_S$geometry %>% 
-  st_coordinates("sfc") %>% 
-  st_linestring()
 
-route_S_line<-
+#Creating an object for the geometry column in the south route df
+Sgeo<-route_S$geometry
+#A step you need to do to inform the function below that is building the line
+n<-length(Sgeo)-1
+#creating function that is creating line strings from the point data 
+Sroute<-lapply(X=1:n, FUN=function(x){
+  pair<-st_combine(c(Sgeo[x], Sgeo[x+1]))
+  line<-st_cast(pair,"LINESTRING")
+  return(line)
+})
+#combining all the line strings together to create the continuous route 
+Sroute_line<-st_multilinestring(do.call("rbind",Sroute))
+#view new line
+plot(Sroute_line)
+class(Sroute_line)#"MULTILINESTRING" "sfg"
 
-#check
-class(st_geometry(route_S_line))#"sfc_LINESTRING" "sfc"
-plot(route_S_line)
+
 
 
 #northern route:
-class(st_geometry(route_N))#"sfc_POINT" "sfc"
 
-route_N_line<-route_N$geometry %>% 
-  st_coordinates("sfc") %>% 
-  st_linestring()
-#check
-class(st_geometry(route_N_line))#"sfc_LINESTRING" "sfc"
-plot(route_N_line)
+#Creating an object for the geometry column in the south route df
+Ngeo<-route_N$geometry
+#A step you need to do to inform the function below that is building the line
+n2<-length(Ngeo)-1
+#creating function that is creating line strings from the point data 
+Nroute<-lapply(X=1:n2, FUN=function(x){
+  pair<-st_combine(c(Ngeo[x], Ngeo[x+1]))
+  line<-st_cast(pair,"LINESTRING")
+  return(line)
+})
+#combining all the line strings together to create the continuous route 
+Nroute_line<-st_multilinestring(do.call("rbind",Nroute))
+#view new line
+plot(Nroute_line)
+class(Nroute_line)#"MULTILINESTRING" "sfg"
 
 
 
@@ -197,33 +232,6 @@ sf::st_crs(route_S)#"WGS 84"
 sf::st_crs(NCAboundary)#"WGS 84"
 sf::st_crs(route_N_line)#NA
 sf::st_crs(route_S_line)#"NA"
-
-######### HELP: what do you do if the line i just created with my points from 
-#the GPS now made it so that the 
-####### WHY dont these lines now not have a crs???
-
-
-
-#create a version that matches coordinates of the predictor raster:
-NCAboundary <- sf:: st_transform( NCAboundary, st_crs( NCAgrid300m ) ) 
-route_S_line<- sf:: st_transform( route_S_line, st_crs( route_S) ) 
-route_N_line<- sf:: st_transform( route_S_line, st_crs( NCAgrid300m ) )
-.#############HELP NOT WORKING FOR LINES BECASUE THEIR CRS=NA
-
-
-
-
-
-############### TRYING THIS APPROACH?:
-
-myfiles <- dir( paste0( datapath, rabpath ), 
-                pattern = '\\.shp', full.names = TRUE )
-
-# Read each shapefile and return a list of sf objects
-listOfShp <- lapply(myfiles, st_read)
-# Look to make sure they're all in the same CRS
-unique(sapply(listOfShp, crs))
-
 
 
 
