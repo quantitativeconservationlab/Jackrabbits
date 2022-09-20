@@ -35,6 +35,11 @@
 #NLCD habitat layers - eventually will be looking at habitat associations using both NLCD raster data
 #and the Guard's polygon habitat data 
 
+#CONFIGURE/MANIPULATE:
+#Make all the vector crs's match the 300m grid rater 
+#Create cleaned dfs for the rabbit data and locations 
+#Create cleaned df for the routes - where routes are changed from points to lines 
+
 
 
 # Setup -------------------------------------------------------------------
@@ -58,6 +63,7 @@ library( rasterVis ) #for raster visualization
 library(RColorBrewer)
 library( terra ) #for raster vis and manipulation 
 library(lubridate)#used to organize and format date and time data 
+library(rgdal)
 
 ## End of package load -------------
 
@@ -107,15 +113,19 @@ plot(NCAboundary)
 route_S <- sf::st_read( paste0(datapath, 
       "BTJR_Aug22_Spotlights_shp/Bigfoot_Simco_transect.shp" ) )
 #Note that this is a polygon or vector file so we will need to make sure it 
-#matches the above rater NCAboundary layer/file
+#matches the above rater NCAgrid300m file 
 plot(route_S )
 route_S
+#geometry: POINT
+#WGS84
 
 #Import Northern Route:
 route_N <- sf::st_read( paste0(datapath, 
                                "BTJR_Aug22_Spotlights_shp/Standifer_Combined_transect.shp" ) )
 plot(route_N )
 route_N
+#geometry: POINT
+#WGS84
 
 
 ## Import Rabbit Locations:
@@ -223,19 +233,83 @@ class(Nroute_line)#"MULTILINESTRING" "sfg"
 
 
 
+###Checking Geometries:
 
-#Match crs of all vector data to raster layer crs:
+sf::st_is_valid(NCAboundary)#TRUE
+sf::st_is_valid(Nroute_line)#TRUE - so these are valid geometry
+sf::st_is_valid(Sroute_line)#TRUE
+#Need to assign these lines a crs 
+any(is.na(st_is_valid(Sroute_line)))#FALSE - checked both N and S
+#So, there is no NAs in these lines 
+
+#empty geometries, using any(is.na(st_dimension(x)))
+#corrupt geometries, using any(is.na(st_is_valid(x)))
+#invalid geometries, using any(na.omit(st_is_valid(x)) == FALSE); in case of corrupt and/or invalid geometries,
+#in case of invalid geometries, query the reason for invalidity by st_is_valid(x, reason = TRUE)
+any(is.na(st_dimension(Nroute_line)))#FALSE - Meaning there is no NAs 
+#checked both N and S
+#checked rabdawn and dusk, and NCAboundary 
+#wont work on rater layer though 
+any(is.na(st_is_valid(NCAboundary)))#All FALSE
+any(na.omit(st_is_valid(NCAboundary)) == FALSE)
+#all FALSE 
+#good to go on geometry - except altering CRS
+
+
+
+## match crs of all vector data to raster layer crs:
 
 #identify what crs the data is currently in:
 sf::st_crs(route_N)#"WGS 84"
 sf::st_crs(route_S)#"WGS 84"
-sf::st_crs(NCAboundary)#"WGS 84"
-sf::st_crs(route_N_line)#NA
-sf::st_crs(route_S_line)#"NA"
+sf::st_crs(NCAgrid300m)#"WGS 84"
+sf::st_crs(NCAboundary)#"NAD 83"
+sf::st_crs(Nroute_line)#NA
+sf::st_crs(Sroute_line)#"NA"
+
+#another way to check this is useing :
+#st_is_longlat(Nroute_line)
+#Also returns an NA
+sf::st_crs(rabsdawn) #"WGS 84"
+
+
+#changing NCA boundary to match NCA grid 300m raster:
+
+#create a version that matches coordinates of the predictor raster:
+NCAb_trans <- sf::st_transform( NCAboundary, st_crs( NCAgrid300m ) )#worked
+#NCA boundary crs now same as NCSgrid300m raster 
+#Check that this is correct:
+st_crs(NCAb_trans) == st_crs(NCAgrid300m)
+#TRUE - so this is good to go
+
+#Another way to check this:
+#identicalCRS(as(NCAb_trans, "Spatial"), NCAgrid300m)
+#TRUE
+plot(NCAgrid300m)
+plot(st_geometry(NCAb_trans), add=TRUE)
 
 
 
+# change route_lines to same crs as NCA boundary / or raster 
 
+#Nrouteline_trans<- sf::st_transform( Nroute_line, st_crs( NCAgrid300m ) )#ERROR
+#i think it is giving an error because it is a multi line string 
+identicalCRS(as(Nroute_line, "Spatial"), NCAgrid300m)
+#FALSE
+new.crs<-CRS("+init=epsg:4326")#WGS84
+
+Nroute.proj<- Nroute_line %>% st_transform(., new.crs)#didnt work - not creating object even 
+#Nroute.proj<-spTransform(Nroute_line, new.crs) 
+#also didnt work 
+
+#######################STOPPING HERE BECASUE CANT GET MULTILINE STRING OF ROUTES
+# TO MATCH THE RASTER YET HERE ############################
+############################ MOVING ON TO CLEANING RAB DF #############
+
+
+
+#Check if it worked:
+st_crs(Nroute.proj) == st_crs(NCAgrid300m)#FALSE
 
 
 
