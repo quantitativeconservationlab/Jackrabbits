@@ -287,6 +287,9 @@ st_crs(NCAb_trans) == st_crs(NCAgrid300m)
 #TRUE
 plot(NCAgrid300m)
 plot(st_geometry(NCAb_trans), add=TRUE)
+#plot(st_geometry(rabs_tot), add=TRUE)
+########### Would adding rab points work if it was more zoomed in on the routes?
+#raster cropped? #########################
 
 
 
@@ -318,10 +321,57 @@ st_crs(Nroute.proj) == st_crs(NCAgrid300m)#FALSE
 
 #Cleaning Rabbit Observation Data (GPS Locations):
 
+##### TO DO:
 #make sure all names are the same for obs. on site and incidentals. 
 #create separate df containing columns of interest
+#
+
+#Checking that the rabbit dfs have the same columns before combining dfs together
+head( rabsdusk ); dim(rabsdusk)
+head( rabsdawn ); dim(rabsdawn)
+
+#combine dawn and dusk rabbit dfs 
+rabs_tot<- dplyr::bind_rows(rabsdawn, rabsdusk)
+head( rabs_tot ); dim(rabs_tot)
+#verified correct amount of observations transferred over and combined correctly
+
+unique(rabs_tot$name) 
+#Clean up name column in new df
+
+#Converting name column to have simply jackrabbit and cottontail observations
+rabs_tot <- rabs_tot %>%
+  dplyr::mutate(Rab.Obv = ifelse(startsWith(name, "J"),"Jackrab", 
+                          ifelse(
+                            startsWith(name, "J"), "Jackrab","Cottontail"
+                          )))
+view(rabs_tot)
+
+#Creating a separate jackrabbit specific df - w/no cottontails 
+#Also, creating age column in new btjr df
+btjr.df <- rabs_tot %>% 
+  filter(Rab.Obv=="Jackrab") %>%
+  # mutate(BTJR.age = ifelse( 
+  #   startsWith(name, "Ja"), "Adult", 
+  #   ifelse( 
+  #     startsWith( name, "Jj"), "Adult", "Juv")))
+  
+  
+  
+
+View(btjr.df)
+
+
+
+
 #clean date and time format with lubridate package
 
+#lubridate=package that helps organize/manipulate/parse dates in datasets
+#Combines Date and time columns (from sitedf) into 1 new column 
+#named Date.Time in desired format mdy_hm.
+rabs_tot$Date.Time <- lubridate::mdy_hm( paste( rabs_tot$time),
+                                       tz = "MST" )
+########## DID NOT WORK - KEEP WORKING ON THIS ###########
+ 
 
 
 
