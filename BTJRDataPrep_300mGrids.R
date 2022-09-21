@@ -342,24 +342,54 @@ unique(rabs_tot$name)
 rabs_tot <- rabs_tot %>%
   dplyr::mutate(Rab.Obv = ifelse(startsWith(name, "J"),"Jackrab", 
                           ifelse(
-                            startsWith(name, "J"), "Jackrab","Cottontail"
-                          )))
+                            startsWith(name, "J"), "Jackrab","Cottontail")))
 view(rabs_tot)
 
 #Creating a separate jackrabbit specific df - w/no cottontails 
 #Also, creating age column in new btjr df
 btjr.df <- rabs_tot %>% 
   filter(Rab.Obv=="Jackrab") %>%
-  # mutate(BTJR.age = ifelse( 
-  #   startsWith(name, "Ja"), "Adult", 
-  #   ifelse( 
-  #     startsWith( name, "Jj"), "Adult", "Juv")))
-  
-  
+  dplyr::mutate(BTJR.age = 
+                  ifelse(startsWith( name, "Ja"), "Adult", "Juv"))
+#####GOT THIS TO WORK BUT NOW THE JUV INCLUDE THE UNKN
+
+
+                         
+      ####### TRIED SO MANY WAYS TO HAVE THIS COLUMN INCLUDE 3 AGE CLASSES: #########
+                         
+               # ifelse(startsWith( name, "Jj"), "Juv", "Unknown")))
+                         
+                         
+                         
+                         #ifelse(startsWith("Ja"), "Juv", "Unknown")))
+                         
+                         #
+                         # ifelse(startsWith(name, "Jj" ), "Juv", "Unknown",
+                         #        
+                         #        ))) 
+                         
+                         ####
+                  # ifelse(startsWith( name, "Ja"), "Adult", "Juv",
+                  # ifelse(startsWith( name, "Jj"), "Juv",
+                  # ifelse(startsWith( name, "Jj"), "Juv", "Unknown")))))
+                  
+ ################## STILL IN PROGRESS: WHEN ADDED ON "Jj" IFELSE STATEMENTS, 
+#I GOT MANY ERRORS - I MAY NOT UNDERSTAND HOW TO USE THIS FUNCTION WHEN THERE
+#IS MORE THAN 2 OPTIONS 
+# - BUT WHEN RAN WITH OUT IT, THE NEW COLUMN IDENTIFIES JUV.s AS ADULTS AND 
+#UNKNOWNS AS JUV.s  ############################
+
+
+
+#try diff way?:
+#btjr.df$BTJR.age<-
   
 
 View(btjr.df)
 
+
+#Arrange by name 
+arrange(btjr.df, name)
 
 
 
