@@ -226,8 +226,16 @@ Nroute<-lapply(X=1:n2, FUN=function(x){
   line<-st_cast(pair,"LINESTRING")
   return(line)
 })
+
+head( Nroute)
+
 #combining all the line strings together to create the continuous route 
-Nroute_line<-st_multilinestring(do.call("rbind",Nroute))
+Nroute_line <- st_multilinestring(do.call("rbind",Nroute))
+#######################JC NOTES FROM MEETING: ########################
+Nroute_2 <- do.call( what = sf:::rbind.sf,
+                     args = Nroute )
+#################################################################
+
 #view new line
 plot(Nroute_line)
 class(Nroute_line)#"MULTILINESTRING" "sfg"
@@ -302,6 +310,14 @@ plot(st_geometry(NCAb_trans), add=TRUE)
 identicalCRS(as(Nroute_line, "Spatial"), NCAgrid300m)
 #FALSE
 new.crs<-CRS("+init=epsg:4326")#WGS84
+##########THIS WAY NOT SF PACKAGE COMPATIABLE THIS =SP PACKAGE ###############
+###########JC MEETING NOTES:
+st_crs( Nroute_line)
+class( Nroute_line)
+head( Nroute_line) 
+Nroute_pr <-  Nroute_line
+
+st_crs(Nroute_pr) = st_crs(4326) 
 
 Nroute.proj<- Nroute_line %>% st_transform(., new.crs)#didnt work - not creating object even 
 #Nroute.proj<-spTransform(Nroute_line, new.crs) 
@@ -354,7 +370,7 @@ btjr.df <- rabs_tot %>%
   dplyr::mutate(BTJR.age = 
                   ifelse(startsWith( name, "Ja"), "Adult", "Juv"))
 #####GOT THIS TO WORK BUT NOW THE JUV INCLUDE THE UNKN
-
+view(btjr.df)
 
                          
       ####### TRIED SO MANY WAYS TO HAVE THIS COLUMN INCLUDE 3 AGE CLASSES: #########
@@ -381,13 +397,31 @@ btjr.df <- rabs_tot %>%
 # - BUT WHEN RAN WITH OUT IT, THE NEW COLUMN IDENTIFIES JUV.s AS ADULTS AND 
 #UNKNOWNS AS JUV.s  ############################
 
-
-
 #try diff way?:
 #btjr.df$BTJR.age<-
+
+
+
+####################### JC NOTES FROM MEETING: ##############################
+#FOR NOW IGNORE AGE AND FOCUS ON CREATING NEW BTJR DF WITH ACCURATE 
+#DATE, TIME, ROW NAMES, ETC.
+#############################################################################
+
+
   
 
-View(btjr.df)
+
+## Creating new cleaned btjr df with usable date, time, locations, and IDs:
+
+#Cleaning up date/time to workable format for lubridate package:
+new_BTJR.df <- 
+
+
+
+
+
+
+
 
 
 #Arrange by name 
@@ -400,9 +434,11 @@ arrange(btjr.df, name)
 #lubridate=package that helps organize/manipulate/parse dates in datasets
 #Combines Date and time columns (from sitedf) into 1 new column 
 #named Date.Time in desired format mdy_hm.
-rabs_tot$Date.Time <- lubridate::mdy_hm( paste( rabs_tot$time),
+rabs_tot$Date.Time <- lubridate::ymd_hms( paste( rabs_tot$time),
                                        tz = "MST" )
-########## DID NOT WORK - KEEP WORKING ON THIS ###########
+########## ADD IN JC SAMPLE SCRIPT STEPS BEFORE THIS 
+# EXTRACT HR 
+
  
 
 
