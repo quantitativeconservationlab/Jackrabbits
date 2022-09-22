@@ -166,6 +166,7 @@ route_N
 #dusk crew
 rabsdusk<- rabsdusk_tot %>% 
   dplyr::select(ID, name,lat, lon, time, geometry)
+
 #view
 rabsdusk
 
@@ -248,6 +249,7 @@ any(is.na(st_is_valid(Sroute_line)))#FALSE - checked both N and S
 #in case of invalid geometries, query the reason for invalidity by st_is_valid(x, reason = TRUE)
 any(is.na(st_dimension(Nroute_line)))#FALSE - Meaning there is no NAs 
 #checked both N and S
+
 #checked rabdawn and dusk, and NCAboundary 
 #wont work on rater layer though 
 any(is.na(st_is_valid(NCAboundary)))#All FALSE
