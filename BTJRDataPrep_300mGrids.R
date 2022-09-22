@@ -64,6 +64,7 @@ library(RColorBrewer)
 library( terra ) #for raster vis and manipulation 
 library(lubridate)#used to organize and format date and time data 
 library(rgdal)
+library(ggplot2)
 
 ## End of package load -------------
 
@@ -371,6 +372,8 @@ btjr.df <- rabs_tot %>%
                   ifelse(startsWith( name, "Ja"), "Adult", "Juv"))
 #####GOT THIS TO WORK BUT NOW THE JUV INCLUDE THE UNKN
 view(btjr.df)
+#Arrange by name? 
+arrange(btjr.df, name)
 
                          
       ####### TRIED SO MANY WAYS TO HAVE THIS COLUMN INCLUDE 3 AGE CLASSES: #########
@@ -414,36 +417,90 @@ view(btjr.df)
 ## Creating new cleaned btjr df with usable date, time, locations, and IDs:
 
 #Cleaning up date/time to workable format for lubridate package:
-new_BTJR.df <- 
+#creating duplicate/new jackrabbit df to manipulate:
+BTJRdf <- btjr.df %>%
+  dplyr::select(name, lat, lon, time, geometry, Rab.Obv)
+#create an empty column for new date and time format to fit into
+BTJRdf$NewDate.Time<-NA
+#view
+dim(BTJRdf)#check contains new column 
+#creating a for loop that will go through each row of time column in df to 
+#   split up the current format and change it to ymd_hms format
+#   this will get rid of the confusing format it is currently in w/ Ts and Zs in it
+for( i in 1:dim(BTJRdf)[1] ) {
+  a <- str_split(BTJRdf$time[i], "T" )[[1]]
+  b <- str_split(a[2], "Z")[[1]] [1]
+  BTJRdf$NewDate.Time[i]<-paste(a [1], b, sep = " ")
+}
+
+view(BTJRdf)
+#has new date.time column with format able to work with lubridate package
 
 
+#add new column of unique IDs using row numbers
+#   - the reason we need to do this is becasue when we downloaded the GPS pts 
+#     from our original 2 GPS's they automatically assigned each pt with a number
+#     behind our naming scheme and as an ID. The ID numbers repeated themselves
+#     in original df becasue they were from 2 seperate GPS's 
+BTJRdf<- BTJRdf %>%
+  dplyr::mutate(RabID=row_number())
+#view
+head(BTJRdf)
 
-
-
-
-
-
-
-#Arrange by name 
-arrange(btjr.df, name)
-
-
-
-#clean date and time format with lubridate package
-
-#lubridate=package that helps organize/manipulate/parse dates in datasets
-#Combines Date and time columns (from sitedf) into 1 new column 
-#named Date.Time in desired format mdy_hm.
-rabs_tot$Date.Time <- lubridate::ymd_hms( paste( rabs_tot$time),
+#use
+BTJRdf$NewDate.Time <- lubridate::ymd_hms( paste( BTJRdf$NewDate.Time),
                                        tz = "MST" )
-########## ADD IN JC SAMPLE SCRIPT STEPS BEFORE THIS 
-# EXTRACT HR 
+#view
+head(BTJRdf)
+view(BTJRdf)
 
  
 
+#Extract hour of night:
+BTJRdf$Hour <- lubridate::hour(BTJRdf$NewDate.Time)#create new Hour column
+#View
+view(BTJRdf)
+#Extract day of yr (out of 365):
+BTJRdf$DayOfYr <- lubridate::yday(BTJRdf$NewDate.Time)#create new Day of yr col.
+#View
+view(BTJRdf)
+#Extract date:
+BTJRdf$Date <- lubridate::date(BTJRdf$NewDate.Time)
+
+
+#reduce size of final df to only include columns of interest:
+BTJRdf <- subset(BTJRdf, select = -time)
+#is wanted to remove more than one column the code would be:
+#   df <- subset (df, select = -c(x,y))
+
+
+#Re-ordering the columns of df :
+BTJRdf<- BTJRdf %>% dplyr::select(RabID,Rab.Obv, name, Date, Hour, DayOfYr, 
+                         NewDate.Time, lat, lon, geometry )
+#view
+view(BTJRdf)
 
 
 
+# Visualizing Date --------------------------------------------------------
+
+BTJRdf %>%
+  dplyr::summarise()
+
+ggplot(BTJRdf, aes(x=Hour, y=  )) +
+  theme_classic(base_size = 17) +
+  geom_bar(size = 2)
+
+
+
+
+
+
+
+
+# Saving Data -------------------------------------------------------------
+# save cleaned BTJRdf csv:
+write.csv( x = BTJRdf, file = "AugBTJR_Clean.csv" )
 
 
 
