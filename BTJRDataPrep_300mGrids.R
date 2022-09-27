@@ -125,6 +125,7 @@ route_N <- sf::st_read( paste0(datapath,
                                "BTJR_Aug22_Spotlights_shp/Standifer_Combined_transect.shp" ) )
 plot(route_N )
 route_N
+
 #geometry: POINT
 #WGS84
 
@@ -409,6 +410,14 @@ arrange(btjr.df, name)
 #FOR NOW IGNORE AGE AND FOCUS ON CREATING NEW BTJR DF WITH ACCURATE 
 #DATE, TIME, ROW NAMES, ETC.
 #############################################################################
+
+## Try plotting BTJR points on map:
+plot(BTJRdf$geometry)
+crs(BTJRdf$geometry)#WGS84
+
+plot(NCAgrid300m)
+plot(st_geometry(BTJRdf), add=TRUE)#Can not see BTJR points on map 
+#Do we need to crop to be able to see points?????
 
 
   
