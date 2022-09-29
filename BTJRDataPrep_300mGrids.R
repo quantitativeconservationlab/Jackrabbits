@@ -304,6 +304,7 @@ for( i in 1:dim(BTJRdf)[1] ) {
 }
 
 
+
 view(BTJRdf)
 #has new date.time column with format able to work with lubridate package
 
@@ -446,9 +447,9 @@ st_crs(NCAb_trans) == st_crs(NCAgrid300m)
 #Plotting Raster and Vector objects together to check :  -----------
 plot(NCAgrid300m)
 plot(st_geometry(NCAb_trans), add=TRUE)
-#plot(st_geometry(rabs_tot), add=TRUE)
-########### Would adding rab points work if it was more zoomed in on the routes?
-#raster cropped? #########################
+##SAVED IMAGE IN COMMON > JACKRABBITS > AUG SPOTLIGHT SURVEYS > R PLOTS > NCA300GRID+NCA.BOUNDARY
+
+
 
 
 
@@ -473,7 +474,7 @@ Ncoordinates<-sf:: st_as_sf(routeN_coord,
 st_crs(Ncoordinates)
 
 Ncoordinates_aes<-sf::st_transform(Ncoordinates, crs(NCAgrid300m))
-
+#Checking that CSR of vector matches raster:
 st_crs(Ncoordinates_aes) == st_crs(NCAgrid300m)#TRUE!!
 #sf :: st_crs
 
@@ -482,6 +483,8 @@ plot(NCAgrid300m)
 plot(st_geometry(Ncoordinates_aes), add=TRUE)
 
 ####### THAT WORKED!! 
+##SAVED IMAGE IN COMMON > JACKRABBITS > AUG SPOTLIGHT SURVEYS > R PLOTS > NCA300GRID+NorthRoute(pts)
+
 
 
 
@@ -501,6 +504,8 @@ st_crs(Scoordinates_aes) == st_crs(NCAgrid300m)#TRUE!!
 
 plot(NCAgrid300m)
 plot(st_geometry(Scoordinates_aes), add=TRUE)
+##SAVED IMAGE IN COMMON > JACKRABBITS > AUG SPOTLIGHT SURVEYS > R PLOTS > NCA300GRID+NorthRoute(pts)
+
 
 
 
@@ -523,6 +528,7 @@ st_crs(BTJRcoordinates_aes) == st_crs(NCAgrid300m)#TRUE!!
 #View:
 plot(NCAgrid300m)
 plot(st_geometry(BTJRcoordinates_aes), add=TRUE)#WORKED
+##SAVED IMAGE IN COMMON > JACKRABBITS > AUG SPOTLIGHT SURVEYS > R PLOTS > NCAgrid300m.Rast+BTJR.Obs(pts)
 
 
 
@@ -533,7 +539,7 @@ plot(st_geometry(BTJRcoordinates_aes), add=TRUE)#WORKED
 
 ## Checking current class of spatial object:  -----------
 class(Scoordinates_aes)#[1] "sf"         "data.frame"
-#BTJRcoordinates = also "sf" dataframe
+#Scoordinates = also "sf" dataframe
 class(Scoordinates_aes$geometry)#[1] "sfc_POINT" "sfc" 
 
 ## Changing Points to lines:
@@ -547,12 +553,6 @@ plot(st_geometry(S_coord_line), add=TRUE)#DOES NOT WORK - Error in CPL_geos_is_e
 
 
 #####################################################################################################
-
-
-
-
-
-
 
 
 ############################################################################
@@ -591,8 +591,11 @@ Sroute_line<-st_multilinestring(do.call("rbind",Sroute))
 plot(Sroute_line)
 class(Sroute_line)
 #[1] "XY"              "MULTILINESTRING" "sfg" 
+crs(Sroute_line)
+# Error in h(simpleError(msg, call)) : 
+#   error in evaluating the argument 'x' in selecting a method for function 'crs': object 'Sroute_line' not found
 
-
+##SAVED IMAGE IN COMMON > JACKRABBITS > AUG SPOTLIGHT SURVEYS > R PLOTS > SouthernRoute(multiline string)
 
 
 #northern route:  -----------
@@ -620,6 +623,7 @@ plot(Nroute_line)
 class(Nroute_line)
 #[1] "XY"              "MULTILINESTRING" "sfg" 
 
+##SAVED IMAGE IN COMMON > JACKRABBITS > AUG SPOTLIGHT SURVEYS > R PLOTS > NorthernRoute(multiline string)
 
 
 
@@ -680,4 +684,11 @@ write.csv( x = BTJRdf, file = "BTJR.obs_AUG_Clean.csv" )
 
 
 ## Save work space:   -----------
+# saving all data to the path
+save.image("saveworkspace.RData")
 
+
+
+
+# loading the workspace
+load("saveworkspace.RData")

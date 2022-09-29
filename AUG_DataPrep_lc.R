@@ -17,37 +17,9 @@
 
 
 
-# Pseudo Code --------------------------------------------------------------
-
-#(Focus on statements, mathematical operations, conditions, iterations, exceptions)
-
-# START:
-
-# INPUT:
-#         Using the quantitativeconservationlab / Jackrabbits GitHub Repository 
-#          to store scripts. URL:https://github.com/quantitativeconservationlab/Jackrabbits.git
-#
-
-
-# READ/GET:
-#   (Input used when reading data )
-
-# PRINT,DISPLAY,SHOW:
-#   (Will show your output to a screen or the relevant output device)
-
-# COMPUTE,CALCULATE,DETERMINE:
-#   (Used to calc.the result of the expression) 
-
-# SET,INIT:
-#   (To initialize values)
-
-# INCREMENT,BUMP:
-#   (To incr.the value of a variable)
-
-# DECREMENT:
-#   (To reduce the value of a variable)
-
-
+#Using the quantitativeconservationlab / Jackrabbits GitHub Repository 
+#to store scripts:
+#URL:https://github.com/quantitativeconservationlab/Jackrabbits.git
 
 
 # Setup -------------------------------------------------------------------
@@ -88,7 +60,7 @@ datapath <- "Z:/Common/Jackrabbits" #May not need this is new script since data 
 ## Import km-level records:
 # 
 # rawrecs <- read.csv( file = paste0( datapath, 
-#                                     'Records.csv'),  
+#                                     'Records_Aug2022.csv'),  
 #                      #replaces those values with NA
 #                      na.strings = c(""," ","NA","Missing"), 
 #                      # includes column heading
