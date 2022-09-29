@@ -278,18 +278,6 @@ BTJRdf <- BTJRdf %>%
 
 
 
-#create an empty column for new date and time format to fit into
-BTJRdf$NewDate.Time<-NA
-#view
-dim(BTJRdf)#check contains new column 
-#creating a for loop that will go through each row of time column in df to 
-#   split up the current format and change it to ymd_hms format
-#   this will get rid of the confusing format it is currently in w/ Ts and Zs in it
-for( i in 1:dim(BTJRdf)[1] ) {
-  a <- str_split(BTJRdf$time[i], "T" )[[1]]
-  b <- str_split(a[2], "Z")[[1]] [1]
-  BTJRdf$NewDate.Time[i]<-paste(a [1], b, sep = " ")
-}
 
 
 
@@ -304,43 +292,63 @@ view(BTJRdf)
 #     in original df because they were from 2 separate GPS's 
 BTJRdf<- BTJRdf %>%
   dplyr::mutate(RabID=row_number())
-#view
-head(BTJRdf)
 
-#use
-BTJRdf$NewDate.Time <- lubridate::ymd_hms( paste( BTJRdf$NewDate.Time),
-                                           tz = "MST" )
+
 #view
 head(BTJRdf)
 view(BTJRdf)
 
-##########################################################################
 
-#converting time stamp from UTC to MST:
 
-BTJRdf$TEST.time <- with_tz(lubridate::ymd_hms(paste( BTJRdf$NewDate.Time), 
-                                               tzone= "US/Mountain" )
+## converting time stamp from UTC to MST:  -----------
 
 
 
+BTJRdf$MST.time <- with_tz (lubridate::ymd_hms( BTJRdf$time),
+                            tzone= "US/Mountain" )
 
-###########################################################################
+View(BTJRdf)
+
+
+#Alternate way to get rid of the T and Z from the time column 
+#####THIS WAS UN NEEDED BECASUE I FIGURED IT OUT WITH THE ABOVE CODE
+
+# #create an empty column for new date and time format to fit into
+
+# BTJRdf$NewDate.Time<-NA
+
+# #view
+# dim(BTJRdf)#check contains new column 
+
+# #creating a for loop that will go through each row of time column in df to 
+# #   split up the current format and change it to ymd_hms format
+# #   this will get rid of the confusing format it is currently in w/ Ts and Zs in it
+
+# for( i in 1:dim(BTJRdf)[1] ) {
+#   a <- str_split(BTJRdf$time[i], "T" )[[1]]
+#   b <- str_split(a[2], "Z")[[1]] [1]
+#   BTJRdf$NewDate.Time[i]<-paste(a [1], b, sep = " ")
+# }
+
+
+
+
 
 #Extract hour of night:
-BTJRdf$Hour <- lubridate::hour(BTJRdf$NewDate.Time)#create new Hour column
+BTJRdf$Hour <- lubridate::hour(BTJRdf$MST.time)#create new Hour column
 
 #Extract day of yr (out of 365):
-BTJRdf$DayOfYr <- lubridate::yday(BTJRdf$NewDate.Time)#create new Day of yr col.
+BTJRdf$DayOfYr <- lubridate::yday(BTJRdf$MST.time)#create new Day of yr col.
 
 #Extract date:
-BTJRdf$Date <- lubridate::date(BTJRdf$NewDate.Time)
+BTJRdf$Date <- lubridate::date(BTJRdf$MST.time)
 
 #View
 view(BTJRdf)
 
 
 #reduce size of final df to only include columns of interest:
-BTJRdf <- subset(BTJRdf, select = -time)
+#BTJRdf <- subset(BTJRdf, select = -time)
 
 
 #is wanted to remove more than one column the code would be:
@@ -349,7 +357,7 @@ BTJRdf <- subset(BTJRdf, select = -time)
 
 #Re-ordering the columns of df :
 BTJRdf<- BTJRdf %>% dplyr::select(RabID,Rab.Obv, name, Date, Hour, DayOfYr, 
-                                  NewDate.Time, lat, lon, geometry )
+                                  MST.time, lat, lon, geometry )
 #view
 view(BTJRdf)
 
