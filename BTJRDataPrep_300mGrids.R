@@ -370,15 +370,6 @@ view(BTJRdf)
 
 
 
-
-
-
-
-
-
-
-
-
 # Checking Geometries: ----------------------------------------------------
 
 ##Checking if geometry of spatial objects are valid :  -----------
@@ -466,7 +457,7 @@ pointz_Nroute<-cbind(x=route_N$lon, y=route_N$lat)
 
 crs<-"+proj=longlat +datum=WGS84"
 
-Nroute_line<-terra::vect(pointz_Nrroute, crs=crs, type="line")
+Nroute_line<-terra::vect(pointz_Nroute, crs=crs, type="line")
 
 
 plot(Nroute_line)# is in WGS84
@@ -491,7 +482,7 @@ route_S$lat<-as.numeric(route_S$lat)
 pointz_Srroute<-cbind(x=route_S$lon, y=route_S$lat)
 
 
-Sroute_line<-terra::vect(pointz_Srroute, crs=TEST_crs, type="line")
+Sroute_line<-terra::vect(pointz_Srroute, crs=crs, type="line")
 
 plot(Sroute_line)# is in WGS84
 
@@ -596,14 +587,15 @@ plot(st_geometry(BTJRcoordinates_aes), add=TRUE)#WORKED
 # Visualizing Date --------------------------------------------------------
 
 BTJRdf %>%
-  dplyr::summarise()
-
-ggplot(BTJRdf, aes(x=Hour, y=  )) +
+  dplyr::summarise()+
+  ggplot(BTJRdf, aes(x=Hour, y= count(BTJRdf$Rab.Obv) )) +
   theme_classic(base_size = 17) +
   geom_bar(size = 2)
 
-
-
+#########################################################################
+######## NOT WORKING HERE YET - REFERENCE JC SCRIPTS FROM JUNE SURVEYS AND 
+#### PULL FROM THOSE TO PLOT EACH OF THESE HERE ########################
+#############################################################################
 
 
 
@@ -636,10 +628,10 @@ write.csv( x = BTJRdf, file = "BTJR.obs_AUG_Clean.csv" )
 
 ## Save work space:   -----------
 # saving all data to the path
-save.image("saveworkspace.RData")
+save.image("300mGrid_BTJRptsAndRoutes.RData")
 
 
 
 
 # loading the workspace
-load("saveworkspace.RData")
+load("300mGrid_BTJRptsAndRoutes.RData")
