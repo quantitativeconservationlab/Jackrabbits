@@ -127,7 +127,7 @@ Jackrabbits<-read.csv(paste0(datapath, "BTJR.obs_AUG_Clean.csv"))
 
 
 #view:
-View(site)
+View(Jackrabbits)
 
 
 # Cleaning Data: ----------------------------------------------------------
@@ -143,7 +143,7 @@ Big.BTJR.df<- site %>%
 #start and end times because this encompasses the entire time that the techs
 #were surveying (incidentals and site routes together) per night.
 
-
+View(Big.BTJR.df)
 ## Removing NAs from end times :  -----------
 Big.BTJR.df$Spotlight_End.Time[15]<-"1:46";Big.BTJR.df$Spotlight_End.Time
 Big.BTJR.df$Spotlight_End.Time[16]<-"1:46";Big.BTJR.df$Spotlight_End.Time
@@ -153,6 +153,22 @@ Big.BTJR.df$Spotlight_End.Time[18]<-"1:58";Big.BTJR.df$Spotlight_End.Time
 #other nights through the survey period (which was 3hr14mins) and added them
 #to the start time to get these end times that were missing. 
 
+
+## Create an start date column 
+Big.BTJR.df$StartDate<-c("August 1,2022","August 1,2022","August 1,2022",
+                         "August 1,2022","August 2,2022","August 2,2022",
+                         "August 2,2022","August 2,2022","August 3,2022",
+                         "August 3,2022","August 4,2022", "August 4,2022",
+                         "August 7,2022","August 7,2022", "August 8,2022",
+                         "August 8,2022","August 12,2022","August 12,2022", 
+                         "August 4,2022","August 4,2022","August 5,2022",
+                         "August 5,2022", "August 8,2022", "August 8,2022", 
+                         "August 9,2022", "August 9,2022", "August 11,2022",
+                         "August 11,2022",  "August 12,2022", "August 12,2022")
+
+#have to do this to configure the correct end time below
+#otherwise some of the dates would be off for dusk crew who worked from 10pm
+#to 2am the next day 
 
 ## Create an end date column 
 Big.BTJR.df$EndDate<-c("August 2,2022","August 2,2022","August 2,2022",
@@ -165,40 +181,38 @@ Big.BTJR.df$EndDate<-c("August 2,2022","August 2,2022","August 2,2022",
                        "August 5,2022", "August 8,2022", "August 8,2022", 
                        "August 9,2022", "August 9,2022", "August 11,2022",
                        "August 11,2022",  "August 12,2022", "August 12,2022")
+#using date column from original data sheet lead to mistakes in the night
+#end and start times because of the dusk teams recording the start of their 
+#transects as diff days from the end of their transects for that night because 
+#of thier surveys happening between 10pmand2am the next day
+#- reference big.BTJR.df before these stepsto see problem more clearly if needed. 
 
-#have to do this to configure the correct end time below
-#otherwise some of the dates would be off for dusk crew who worked from 10pm
-#to 2am the next day 
+
 
 
 
 ## Cleaning date format in Big BTJR df:  -----------
 Big.BTJR.df$Date <-lubridate::mdy(Big.BTJR.df$Date)
 Big.BTJR.df$EndDate<-lubridate::mdy(Big.BTJR.df$EndDate)
+Big.BTJR.df$StartDate<-lubridate::mdy(Big.BTJR.df$StartDate)
+
 
 #Combining date with start time to one column :  -----------
-Big.BTJR.df$Start_MST.time <- paste(Big.BTJR.df$Date, Big.BTJR.df$Spotlight_Start.Time, 
+Big.BTJR.df$Start_MST.time <- paste(Big.BTJR.df$StartDate, Big.BTJR.df$Spotlight_Start.Time, 
                               sep = " ")
 
 #Combining date with end time to one column :  -----------
 Big.BTJR.df$End_MST.time <- paste(Big.BTJR.df$EndDate, Big.BTJR.df$Spotlight_End.Time, 
                               sep = " ")
 
+View(Big.BTJR.df)
 #Making a yday column :  -----------
 
 #Extract day of yr (out of 365):
-Big.BTJR.df$DayofYr <- lubridate::yday(Big.BTJR.df$)
+Big.BTJR.df$DayofYr <- lubridate::yday(Big.BTJR.df$End_MST.time)
 
 ###########################################################################################
-# NEED TO FIGURE OUT DATES IN START AND END MST.TIMES - MAKE SURE THEY ARE ALL CORRECT 
-# THEY ARE GETTING MESSED UP BECASUE OF THE TIME CHANGE OVER FROM AM TO PM DURRING THE SURVEYS 
-#TRIED TO USE THE DATE LISTED IN ORIGINAL DATE TO COMBINE WITH THE START AND END TIME BUT NOW THIS 
-#HAS MADE A MESS OF THE CORRECT TIMES AND CORRISPONDING DAYS 
-
-
-# FIX THIS FIRST THING SUNDAY MORNING 
-# THEN CREATE RABBIT DF WITH CLEANED DATA AND NEW ROUTE N AND ROUTE S 
-#COLUMNS TO BE FILLED WITH THE FOR LOOP THAT JC SHOWED ME TODAY (FRIDAY)
+#DO WE CONFIGURE YDAY FROM THE START OR END DATE OF THE BIG.BTJR.DF?
 
 
 
@@ -223,12 +237,9 @@ for (r in 1:dim(Big.BTJR.df)[1]){
 
 ## Removing un-needed columns :  -----------
 Big.BTJR.df <- Big.BTJR.df %>%
-  dplyr::select(RouteID, SurveyDate=Date, Start_MST.time, End_MST.time, 
-                Start_temp.F., Start_wind.km.h.) 
-
-
-
-
+  dplyr::select(RouteID, Start_MST.time, End_MST.time, 
+                Start_temp.F., Start_wind.km.h., DayofYr) 
+#SurveyID=? end date like day of yr? 
 
 
 
@@ -240,6 +251,38 @@ View(Big.BTJR.df)
 
 
 
+# Cleaning Rab.df ---------------------------------------------------------
+
+##Selecting columns of interest from original df:
+Rab.df<-Jackrabbits %>%
+  select(RabID, lat,lon, Species=Rab.Obv, Rab.name=name, Date,MST.time, 
+         Hour,DayOfYr)
+
+
+##Creating N and S route columns 
+Rab.df$RouteN<-NA
+Rab.df$RouteS<-NA
+
+##Assigning a for loop to the N or S column to tell it to fill the columns with
+#a Y or N if it falls between the start end end times of each crew 
+for( r in 1:dim(Rab.df)[1]){
+  dfN <-Big.BTJR.df %>% filter (date ==Rab.df$Date [r]) %>%
+    filter(RouteID == "N.Route")
+  dfS <-Big.BTJR.df %>% filter(date == Rab.df$Date [r]) %>%
+    filter((RouteID == "S.Route")
+           Rab.df$RouteS[r] <- ifelse(Rab.df$MST.time[r] > dfN$Start_MST.time &
+                                        Rab.df$MST.time[r]< dfN$End_MST.time,1,0)
+           Rab.df$RouteS[r] <- ifelse(Rab.df$MST.time[r] > dfS$Start_MST.time &
+                                        Rab.df$MST.time[r]< dfN$End_MST.time,1,0)
+          
+}
+
+
+
+
+
+
+View(Rab.df)
 
 
 
