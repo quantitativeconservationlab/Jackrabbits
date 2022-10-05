@@ -30,7 +30,7 @@
 # START: 
 #This script is intended to link the GPS points of rabbits observed and all driving routes
 #taken during the spotlight surveys conducting in the NCA in August to 300x300m grid cell 
-#for the NCA that correlates to the NLCD habiat  layers for this study area
+#for the NCA that correlates to the NLCD habitat  layers for this study area
 
 # INPUT:
 #Common Z drive - Habitat - NLCD_new - NCA_raster_summaries_300m

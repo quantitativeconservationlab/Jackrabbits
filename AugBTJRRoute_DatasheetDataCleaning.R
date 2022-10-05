@@ -213,7 +213,7 @@ Big.BTJR.df$DayofYr <- lubridate::yday(Big.BTJR.df$End_MST.time)
 
 ###########################################################################################
 #DO WE CONFIGURE YDAY FROM THE START OR END DATE OF THE BIG.BTJR.DF?
-
+#can try with start day ----
 
 
 ###########################################################################################
@@ -245,12 +245,14 @@ Big.BTJR.df <- Big.BTJR.df %>%
 
 View(Big.BTJR.df)
 
-
-
-
-
-
-
+redroutes <- Big.BTJR.df %>% 
+  group_by( RouteID, DayofYr ) %>% 
+  summarise( Start_MST.time = first( lubridate::ymd_hm(Start_MST.time, tz = "MST") ),
+          End_MST.time = first( lubridate::ymd_hm( End_MST.time, tz = "MST") ),
+          Start_temp.F. = mean( Start_temp.F.),
+          Start_wind.km.h. = mean( Start_wind.km.h. ) )
+#view
+head( redroutes); dim(redroutes)
 # Cleaning Rab.df ---------------------------------------------------------
 
 ##Selecting columns of interest from original df:
@@ -258,29 +260,40 @@ Rab.df<-Jackrabbits %>%
   select(RabID, lat,lon, Species=Rab.Obv, Rab.name=name, Date,MST.time, 
          Hour,DayOfYr)
 
+#view
+head(Rab.df )
+#fix date to lubridate
+Rab.df$MST.time <-lubridate::mdy_hm( Rab.df$MST.time, tz = "MST" )
 
 ##Creating N and S route columns 
 Rab.df$RouteN<-NA
 Rab.df$RouteS<-NA
 
+str(Rab.df)
 ##Assigning a for loop to the N or S column to tell it to fill the columns with
-#a Y or N if it falls between the start end end times of each crew 
-for( r in 1:dim(Rab.df)[1]){
-  dfN <-Big.BTJR.df %>% filter (date ==Rab.df$Date [r]) %>%
-    filter(RouteID == "N.Route")
-  dfS <-Big.BTJR.df %>% filter(date == Rab.df$Date [r]) %>%
-    filter((RouteID == "S.Route")
-           Rab.df$RouteS[r] <- ifelse(Rab.df$MST.time[r] > dfN$Start_MST.time &
-                                        Rab.df$MST.time[r]< dfN$End_MST.time,1,0)
-           Rab.df$RouteS[r] <- ifelse(Rab.df$MST.time[r] > dfS$Start_MST.time &
-                                        Rab.df$MST.time[r]< dfN$End_MST.time,1,0)
-          
-}
+# #a Y or N if it falls between the start end end times of each crew 
+# for( r in 1:dim( Rab.df )[1] ){
+#   dfN <- Big.BTJR.df %>% #filter(date == Rab.df$Date[r] ) %>%
+#     dplyr::filter( RouteID == "N.Route" )
+#   dfS <- Big.BTJR.df %>% #filter(date == Rab.df$Date[r] ) %>%
+#      dplyr::filter( (RouteID == "S.Route" ) 
+#   print( head( dfN))
+#   print( head(dfS))
+#   for( i in 1:dim( dfN)[1] ){                  
+#   Rab.df$RouteS[r] <- ifelse( Rab.df$MST.time[r] > dfN$Start_MST.time[i] &
+#                              Rab.df$MST.time[r] < dfN$End_MST.time[i], 1, 0 )
+#   Rab.df$RouteS[r] <- ifelse( Rab.df$MST.time[r] > dfS$Start_MST.time[i] &
+#                     Rab.df$MST.time[r] < dfN$End_MST.time[i], 1, 0 )
+#   
+#   print( Rab)
+#   }
+# }
+
+redroutes[ which( redroutes$Start_MST.time < Rab.df$MST.time[1] &
+                      redroutes$End_MST.time > Rab.df$MST.time[1] ), ]
 
 
-
-
-
+Rab.df[1,]
 
 View(Rab.df)
 
