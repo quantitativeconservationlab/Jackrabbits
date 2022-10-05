@@ -94,6 +94,7 @@ getwd()#"C:/Users/leticiacamacho/Documents/BTJR_MSProject/Rcode/Spotlights_Hab_2
 
 # if so then:
 workdir <- getwd() 
+
 #creating working directory as an object so you can call it easier 
 #     - without having to type it out or re-run each time.
 
@@ -134,9 +135,9 @@ View(Jackrabbits)
 
 ## Creating "BigBTJR.df" from site.df with columns of interest:  -----------
 Big.BTJR.df<- site %>%
-  dplyr::select(Survey_ID, Date, Crew_name, Site, Start_temp.F., 
-                Start_wind.km.h., Spotlight_Start.Time, 
-                Spotlight_End.Time)
+  dplyr::select(Survey_ID, Date, Crew_name,Night_number, Start_time, End_time,
+                Site, Start_temp.F., Start_wind.km.h., Spotlight_Start.Time, 
+                Spotlight_End.Time,)
 # Will use start wind and temp because there are 2 NAs in the end wind/temps
 # for Aug. spotlight surveys.
 #using spotlight time start and end instead of using the individual site route
@@ -206,10 +207,18 @@ Big.BTJR.df$End_MST.time <- paste(Big.BTJR.df$EndDate, Big.BTJR.df$Spotlight_End
                               sep = " ")
 
 View(Big.BTJR.df)
+str(Big.BTJR.df)
+
+#Putting created columns in lubridate format:
+Big.BTJR.df$Start_MST.time<-lubridate::ymd_hm(Big.BTJR.df$Start_MST.time)
+Big.BTJR.df$End_MST.time<-lubridate::ymd_hm(Big.BTJR.df$End_MST.time)
+
+
+
 #Making a yday column :  -----------
 
 #Extract day of yr (out of 365):
-Big.BTJR.df$DayofYr <- lubridate::yday(Big.BTJR.df$End_MST.time)
+Big.BTJR.df$DayofYr <- lubridate::yday(Big.BTJR.df$Start_MST.time)
 
 ###########################################################################################
 #DO WE CONFIGURE YDAY FROM THE START OR END DATE OF THE BIG.BTJR.DF?
@@ -230,21 +239,28 @@ for (r in 1:dim(Big.BTJR.df)[1]){
 # | is used as an OR argument in the ifelse statements 
 # you would use & if you wanted an AND argument in the ifelse statement 
 
+############################
+#SAVING THIS CSV HERE SO CAN USE IT IN NEW ABUNDANCE SCRIPTS 
 
+# Saving Data -------------------------------------------------------------
+## Save csv's:   -----------
 
-
+# Save cleaned csv:
+write.csv( x = Big.BTJR.df , file =  "BigRabdf_extended.csv")
+##############################
 
 
 ## Removing un-needed columns :  -----------
 Big.BTJR.df <- Big.BTJR.df %>%
   dplyr::select(RouteID, Start_MST.time, End_MST.time, 
-                Start_temp.F., Start_wind.km.h., DayofYr) 
-#SurveyID=? end date like day of yr? 
+                Start_temp.F., Start_wind.km.h., DayofYr, Site, Crew_name) 
 
 
 
 View(Big.BTJR.df)
 
+#################################################################################
+#FROM JC MEETING OCT 3 
 redroutes <- Big.BTJR.df %>% 
   group_by( RouteID, DayofYr ) %>% 
   summarise( Start_MST.time = first( lubridate::ymd_hm(Start_MST.time, tz = "MST") ),
@@ -253,6 +269,10 @@ redroutes <- Big.BTJR.df %>%
           Start_wind.km.h. = mean( Start_wind.km.h. ) )
 #view
 head( redroutes); dim(redroutes)
+
+###########################################################################
+
+
 # Cleaning Rab.df ---------------------------------------------------------
 
 ##Selecting columns of interest from original df:
@@ -303,49 +323,6 @@ View(Rab.df)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Saving Data -------------------------------------------------------------
 ## Save csv's:   -----------
 
@@ -368,6 +345,9 @@ load("xxxx.RData")
 
 
 
+#########################################################################
+#DIDNT SAVE BECASUE JC CHANGED EVERYTHING SO NEED TO MAKE A NEW SCRIPT 
+# TO FOCUS ON INDIVIDUAL GRID CELLS AND COUNTS OF BTJR WITHIN THEM 
 
 
 

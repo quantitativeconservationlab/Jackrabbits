@@ -67,6 +67,34 @@ View(Jackrabbits)
 View(BigRabdf_extended)
 
 
+#Making Histograms of Weather Variables:
+
+hist(BigRabdf_extended$Start_temp.F.)
+hist(BigRabdf_extended$Start_wind.km.h.)
+
+ggplot(data=BigRabdf_extended, aes(x=Start_temp.F.))+
+  geom_histogram(binwidth = 2, color="black", fill="seagreen")+
+  theme_bw()+
+  labs(x= "Start Temp. (F)", 
+       y= "Counts", 
+       title = "Histogram of Starting Tempatures (deg. F) 
+       for August 2022 Spotlight Surveys")
+#This is so much uglier then the base hist()
+
+
+
+ggplot(data=BigRabdf_extended, aes(x=Start_wind.km.h.))+
+  geom_histogram(binwidth = 2, color="black", fill="seagreen")+
+  theme_bw()+
+  labs(x= "Start Wind. (Km/hr)", 
+       y= "Counts", 
+       title = "Histogram of Starting Wind (Km/hr) 
+       for August 2022 Spotlight Surveys")
+
+
+
+
+
 
 
 
