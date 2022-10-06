@@ -320,35 +320,48 @@ Rab.df$MST.time <-lubridate::mdy_hm( Rab.df$MST.time, tz = "MST" )
 # Checking Geometries: ----------------------------------------------------
 
 #Changing Jackrabbit df from dataframe to sf object :  -----------
-sf::st_as_sf(Jackrabbits$geometry)
-##########################################################################3
-#SOMETHING IS WRONG WITH THE JACKRABBITS DF BECASUE WHEN I WROTE THE CLEAN AUG CSV IT LOOSES THE GEOMETRY COLUMN 
-
-##############################################################################
-
-
-
-
-
-
-
-
-
-
-
+sf::st_as_sf(Jackrabbits)
 
 
 ##Checking if geometry of spatial objects are valid :  -----------
-sf::st_is_valid()
+sf::st_is_valid(Jackrabbits)#look all true
+all(st_is_valid(Jackrabbits))#TRUE
+any(is.na(st_dimension(Jackrabbits)))#no missing geometry
+
+
+sf:: st_is_valid(NCAboundary)
+#TRUE
 
 
 #Checking CRS of all objects :  -----------
+sf::st_is_longlat(Jackrabbits)
+sf:: st_crs(Jackrabbits)#WGS84
+sf:: st_crs(NCAboundary)#NAD83
+sf:: st_crs(NCAgrid300m)
+
+#Transforming crs to match raster :  -----------
+
+#create a version that matches coordinates of the predictor raster:
+NCAb_trans <- sf::st_transform( NCAboundary, st_crs( NCAgrid300m ) )#worked
+#NCA boundary crs now same as NCSgrid300m raster 
+#Check that this is correct:
+st_crs(NCAb_trans) == st_crs(NCAgrid300m)
+#TRUE - so this is good to go
+
+Jackrabbits_trans<-sf::st_transform( Jackrabbits, st_crs( NCAgrid300m ) )
+
+st_crs(Jackrabbits_trans) == st_crs(NCAgrid300m)
+#TRUE
+
+#Plotting Raster and Vector objects together to check :  -----------
+plot(NCAgrid300m)
+plot(st_geometry(NCAb_trans), add=TRUE)
+plot(st_geometry(Jackrabbits_trans), add=TRUE)
+#Worked good 
 
 
 
-
-
-
+#
 
 
 
