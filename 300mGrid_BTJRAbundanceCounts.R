@@ -16,6 +16,7 @@ library(ggplot2)
 library(sf)
 library(terra)
 library(raster)
+library(lubridate)
 
 
 
@@ -60,7 +61,9 @@ rastpath<-"Z:/Common/QCLData/Habitat/NLCD_new/NCA_raster_summaries_300m/"
 
 site<- read.csv(paste0(datapath, "Site_Aug2022.csv"))
 
-Jackrabbits<-read.csv(datapath, "BTJR.obs_AUG_Clean.csv")
+#Jackrabbits<-read.csv(datapath, "BTJR.obs_AUG_Clean.csv")
+#Re-created this df below because this csv saved and created in the 
+#BTJRDataPrep_300mGrid script lost the sf geometry column somehow 
 
 BigRabdf_extended<-read.csv(datapath, "BigRabdf_extended.csv")
 
@@ -125,13 +128,80 @@ ggplot(data = Jackrabbits, aes(x = Hour))+
 
 # Cleaning dfs: -----------------------------------------------------------
 
+##############################################################################
+
+#Recreating rabbit df :
+
+#saved BTJR.obs_AUG_clean csv lost the sf geometry column somehow 
+## Import Rabbit Locations:  -----------
+rabsdawn_tot <- sf::st_read( paste0(datapath, 
+                                    "BTJR_Aug22_Spotlights_shp/BTJR_Dawn_Aug22.shp") )
+
+rabsdusk_tot <- sf::st_read( paste0(datapath, 
+                                    "BTJR_Aug22_Spotlights_shp/BTJR_Dusk_Aug22.shp") )
+rabsdusk<- rabsdusk_tot %>% 
+  dplyr::select(ID, name,lat, lon, time, geometry)
+
+rabsdawn<- rabsdawn_tot %>% 
+  dplyr::select(ID, name,lat, lon, time, geometry)
+
+rabs_tot<- dplyr::bind_rows(rabsdawn, rabsdusk)
+
+head( rabs_tot ); dim(rabs_tot)
+
+rabs_tot <- rabs_tot %>%
+  dplyr::mutate(Rab.Obv = ifelse(startsWith(name, "J"),"Jackrab", 
+                                 ifelse(
+                                   startsWith(name, "J"), "Jackrab","Cottontail")))
+
+BTJRdf <- rabs_tot %>% 
+  filter(Rab.Obv=="Jackrab")
+
+BTJRdf <- BTJRdf %>%
+  dplyr::select(name, lat, lon, time, geometry, Rab.Obv)
+
+BTJRdf<- BTJRdf %>%
+  dplyr::mutate(RabID=row_number())
+
+
+## converting time stamp from UTC to MST:  -----------
+
+BTJRdf$MST.time <- with_tz (lubridate::ymd_hms( BTJRdf$time),
+                            tzone= "US/Mountain" )
+#Extract hour of night:
+BTJRdf$Hour <- lubridate::hour(BTJRdf$MST.time)#create new Hour column
+
+#Extract day of yr (out of 365):
+BTJRdf$DayOfYr <- lubridate::yday(BTJRdf$MST.time)#create new Day of yr col.
+
+#Extract date:
+BTJRdf$Date <- lubridate::date(BTJRdf$MST.time)
+
+#Re-ordering the columns of df :
+BTJRdf<- BTJRdf %>% dplyr::select(RabID,Rab.Obv, name, Date, Hour, DayOfYr, 
+                                  MST.time, lat, lon, geometry )
+
+#View
+view(BTJRdf)
+
+
+
+Jackrabbits<-BTJRdf
+
+
+
+
+
+
+################################################################
+
 
 #Creating cleaned Rab.df:  -----------
 
 #First need to combine geometry column together because it got split somehow:
-Jackrabbits$geometry<-paste(Jackrabbits$geometry, Jackrabbits$X, sep = ",")
+#Jackrabbits$geometry<-paste(Jackrabbits$geometry, Jackrabbits$X, sep = ",")
 #remove un-needed X column
-Jackrabbits<-subset(Jackrabbits, select = -X)
+#Jackrabbits<-subset(Jackrabbits, select = -X)
 
 
 #creating Survey Night column in jackrabbit df:
@@ -250,7 +320,7 @@ Rab.df$MST.time <-lubridate::mdy_hm( Rab.df$MST.time, tz = "MST" )
 # Checking Geometries: ----------------------------------------------------
 
 #Changing Jackrabbit df from dataframe to sf object :  -----------
-sf::st_as_sf(Jackrabbits)
+sf::st_as_sf(Jackrabbits$geometry)
 ##########################################################################3
 #SOMETHING IS WRONG WITH THE JACKRABBITS DF BECASUE WHEN I WROTE THE CLEAN AUG CSV IT LOOSES THE GEOMETRY COLUMN 
 
