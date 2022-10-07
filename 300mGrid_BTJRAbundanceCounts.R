@@ -65,7 +65,7 @@ site<- read.csv(paste0(datapath, "Site_Aug2022.csv"))
 #Re-created this df below because this csv saved and created in the 
 #BTJRDataPrep_300mGrid script lost the sf geometry column somehow 
 
-BigRabdf_extended<-read.csv(datapath, "BigRabdf_extended.csv")
+BigRabdf_extended<-read.csv(paste0(datapath, "BigRabdf_extended.csv"))
 
 ## Importing Raster Data:  -----------
 
@@ -79,8 +79,8 @@ NCAboundary <- sf::st_read( paste0( habpath,
 
 #view:
 View(site)
-View(Jackrabbits)
 View(BigRabdf_extended)
+
 
 
 
@@ -120,8 +120,10 @@ ggplot(data = Jackrabbits, aes(x = DayOfYr))+
 ggplot(data = Jackrabbits, aes(x = Hour))+
          geom_histogram(binwidth = 1)
 #NEED TO DEFINE X AXIS BORDERS 
-       
-
+ggplot(data = Jackrabbits, aes(x=Hour))+
+  geom_bar()
+#NEED TO DEFINE X AXIS BORDERS - that show hour: 20-5 continuously to show 
+#distubution of #BTJR seen during these times
 
 
 
@@ -190,20 +192,6 @@ Jackrabbits<-BTJRdf
 
 
 
-
-
-
-################################################################
-
-
-#Creating cleaned Rab.df:  -----------
-
-#First need to combine geometry column together because it got split somehow:
-#Jackrabbits$geometry<-paste(Jackrabbits$geometry, Jackrabbits$X, sep = ",")
-#remove un-needed X column
-#Jackrabbits<-subset(Jackrabbits, select = -X)
-
-
 #creating Survey Night column in jackrabbit df:
 
 #creating for loop to assign survey night: 
@@ -251,56 +239,73 @@ Jackrabbits %>%
 
 
 
-#############################################################################
 
+# Cleaning "when" df: -----------------------------------------------------
 
+#"When" df will be constructed from the site.csv information
 
-
-
-
-
-plot(NCAgrid300m)
-plot(st_geometry(Jackrabbits), add=TRUE)
- class(Jackrabbits)
-
-
-
-
-
-
-
-
-
-
+#Select columns of interest:
 BTJR_When.df <- site %>%
-  dplyr::select(Survey_ID, Date, Crew_name, Site, Start_temp.F., 
-                Start_wind.km.h., Spotlight_Start.Time, 
-                Spotlight_End.Time, Night_number)
+  dplyr::select(Survey_ID,Date, Crew_name,Night_number, Start_time, End_time,
+                Site, Start_temp.F.,Start_wind.km.h., Spotlight_Start.Time, 
+                Spotlight_End.Time) 
+
+#Creating columns want to create:
+BTJR_When.df$Duration.Hrs<- "NA"
+BTJR_When.df$Sampling.Effort<- "NA"
+BTJR_When.df$CellID <- "NA"
+
+#Making a start and end time in lubridate format for each site specific time:
+BTJR_When.df$Date <-lubridate::mdy(BTJR_When.df$Date)
+
+
+#Combining date with start time to one column :  -----------
+BTJR_When.df$Start_MST.time <- paste(BTJR_When.df$Date, BTJR_When.df$Start_time, 
+                                    sep = " ")
+
+#Combining date with end time to one column :  -----------
+BTJR_When.df$End_MST.time <- paste(BTJR_When.df$Date, BTJR_When.df$End_time, 
+                                     sep = " ")
+
+
+#Putting created columns in lubridate format:
+BTJR_When.df$Start_MST.time<-lubridate::ymd_hm(BTJR_When.df$Start_MST.time)
+BTJR_When.df$End_MST.time<-lubridate::ymd_hm(BTJR_When.df$End_MST.time)
+
+#rearrange df and remove unneeded columns:
+
+BTJR_When.df <- BTJR_When.df %>%
+  dplyr::select(Survey_ID,Night_number, Crew_name, 
+                Site, Start_MST.time, End_MST.time,
+                Start_temp.F.,Start_wind.km.h.,
+                Duration.Hrs, Sampling.Effort, CellID) 
+
+#Configuring Duration.Hrs column from start and end times:
+BTJR_When.df$Duration.Hrs<-abs(difftime(BTJR_When.df$Start_MST.time, 
+                                    BTJR_When.df$End_MST.time, units = "mins"))
+
+#there is a problem with a few rows in the duration column
+#when it is switching from 23hr to midnight 00 that same night this function is
+#calculating the incorrect difftime in mins so i am going to manually change 
+#these values for now:
+BTJR_When.df$Duration.Hrs[2]<-"33"
+BTJR_When.df$Duration.Hrs[13]<-"35"
+BTJR_When.df$Duration.Hrs[15]<-"36"
+
+
+
+
+View(BTJR_When.df)
 
 
 
 
 
+#############################################################################
+# NEED TO FIGURE OUT HOW TO ASSIGN GRID CELL ID'S TO BOTH DFS 
 
 
-# Cleaning Rab.df ---------------------------------------------------------
-
-##Selecting columns of interest from original df:
-Rab.df<-Jackrabbits %>%
-  select(RabID, lat,lon, Species=Rab.Obv, Rab.name=name, Date,MST.time, 
-         Hour,DayOfYr)
-
-#view
-head(Rab.df )
-#fix date to lubridate
-Rab.df$MST.time <-lubridate::mdy_hm( Rab.df$MST.time, tz = "MST" )
-
-
-
-
-
-
-################################################################
+#############################################################################
 
 
 
@@ -361,7 +366,40 @@ plot(st_geometry(Jackrabbits_trans), add=TRUE)
 
 
 
-#
+# Checking extent and cropping raster to fit data more closely ------------
+
+##Checking Extents :  -----------
+st_bbox(Jackrabbits_trans)
+#  xmin     ymin     xmax     ymax 
+#-1626979  2409339 -1601886  2441791 
+st_bbox(NCAb_trans)
+#  xmin     ymin     xmax     ymax 
+#-1650957  2367880 -1565864  2449339 
+ext(NCAgrid300m)
+#SpatExtent : -1660905, -1555905, 2357685, 2459385 (xmin, xmax, ymin, ymax)
+
+#WHAT DO I DO WITH THIS INFORMATION - HOW TO I CROP TO BETTER FIT THE 
+#JACKRABBIT DATA?
+
+
+
+
+##Checking Resolutions :  -----------
+res(NCAgrid300m)#300 300
+ncol(NCAgrid300m)#350
+NCAgrid300m
+
+
+Jackrabbits_trans
+
+
+###########################################################################
+# NEXT NEED TO CROP THE MAP TO BETTER FIT THE BTJR POINTS ON THE MAP 
+
+##########################################################################
+
+
+
 
 
 
@@ -392,7 +430,7 @@ write.csv( x = Jackrabbits , file = "Jackrabbits.Aug.csv" )
 
 ## Save work space:   -----------
 # saving all data to the path
-save.image("300mgrid_Jackrabbit.RData")
+#save.image("300mgrid_Jackrabbit.RData")
 
 
 
