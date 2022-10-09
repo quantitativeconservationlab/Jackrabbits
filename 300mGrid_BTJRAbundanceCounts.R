@@ -13,10 +13,11 @@ rm( list = ls() )
 library( tidyverse ) #package for easy data manipulation
 #install.packages("tidyverse") 
 library(ggplot2)
+library(lubridate)
 library(sf)
 library(terra)
 library(raster)
-library(lubridate)
+
 
 
 
@@ -81,49 +82,30 @@ NCAboundary <- sf::st_read( paste0( habpath,
 View(site)
 View(BigRabdf_extended)
 
+##Importing Survey Routes:  -----------
+#Importing Southern Routes:
+route_S <- sf::st_read( paste0(datapath, 
+                               "BTJR_Aug22_Spotlights_shp/Bigfoot_Simco_transect.shp" ) )
+#Note that this is a polygon or vector file so we will need to make sure it 
+#matches the above rater NCAgrid300m file 
+
+#Viewing imported Southern routes:
+plot(route_S )
+route_S#geometry: POINT, CRS: WGS84
+
+#Import Northern Route:
+route_N <- sf::st_read( paste0(datapath, 
+                               "BTJR_Aug22_Spotlights_shp/Standifer_Combined_transect.shp" ) )
+#Viewing imported Northern routes:
+plot(route_N )
+route_N#geometry: POINT, CRS: WGS84
 
 
 
 
 
-#Making Histograms of Weather Variables:  -----------
-
-hist(BigRabdf_extended$Start_temp.F.)
-hist(BigRabdf_extended$Start_wind.km.h.)
-
-ggplot(data=BigRabdf_extended, aes(x=Start_temp.F.))+
-  geom_histogram(binwidth = 2, color="black", fill="seagreen")+
-  theme_bw()+
-  labs(x= "Start Temp. (F)", 
-       y= "Counts", 
-       title = "Histogram of Starting Tempatures (deg. F) 
-       for August 2022 Spotlight Surveys")
-#This is so much uglier then the base hist()?
 
 
-
-ggplot(data=BigRabdf_extended, aes(x=Start_wind.km.h.))+
-  geom_histogram(binwidth = 2, color="black", fill="seagreen")+
-  theme_bw()+
-  labs(x= "Start Wind. (Km/hr)", 
-       y= "Counts", 
-       title = "Histogram of Starting Wind (Km/hr) 
-       for August 2022 Spotlight Surveys")
-
-
-
-#Making histogram of Jackrabbit obs:
-
-ggplot(data = Jackrabbits, aes(x = DayOfYr))+
-  geom_histogram(binwidth = 1)
-
-ggplot(data = Jackrabbits, aes(x = Hour))+
-         geom_histogram(binwidth = 1)
-#NEED TO DEFINE X AXIS BORDERS 
-ggplot(data = Jackrabbits, aes(x=Hour))+
-  geom_bar()
-#NEED TO DEFINE X AXIS BORDERS - that show hour: 20-5 continuously to show 
-#distubution of #BTJR seen during these times
 
 
 
@@ -131,6 +113,39 @@ ggplot(data = Jackrabbits, aes(x=Hour))+
 # Cleaning dfs: -----------------------------------------------------------
 
 ##############################################################################
+
+
+##########
+# Preparing Data: ---------------------------------------------------------
+
+## Cleaning data [ROUTES] :  -----------
+
+#Selecting columns of interest for routes:  -----------
+
+#Southern Routes:
+route_S <- route_S %>% 
+  #keep columns of interest only
+  dplyr::select( ID, trksegID, lat, lon, geometry )
+#view
+route_S
+
+
+#Northern Routes:
+route_N <- route_N %>% 
+  #keep columns of interest only
+  dplyr::select( ID, trksegID, lat, lon, geometry )
+#view
+route_N
+##########
+
+
+
+
+
+
+
+
+
 
 #Recreating rabbit df :
 
@@ -234,8 +249,8 @@ for (r in 1:dim(Jackrabbits)[1]){
 
 View(Jackrabbits)
 
-Jackrabbits %>%
-  filter(SurveyNight == "1")
+#Jackrabbits %>%
+#  filter(SurveyNight == "1")
 
 
 
@@ -294,6 +309,19 @@ BTJR_When.df$Duration.Hrs[15]<-"36"
 
 
 
+#Creating a RouteID column to specify if this was a North or South route:
+BTJR_When.df$RouteID <- NA
+
+for (r in 1:dim(BTJR_When.df)[1]){
+  BTJR_When.df$RouteID <- ifelse(BTJR_When.df$Site == "Bigfoot_butte" |
+                                BTJR_When.df$Site == "Simco" , "S.Route","N.Route")
+
+}
+# | is used as an OR argument in the ifelse statements 
+# you would use & if you wanted an AND argument in the ifelse statement 
+
+
+
 
 View(BTJR_When.df)
 
@@ -302,15 +330,11 @@ View(BTJR_When.df)
 
 
 #############################################################################
-# NEED TO FIGURE OUT HOW TO ASSIGN GRID CELL ID'S TO BOTH DFS 
+# NEED TO FIGURE OUT HOW TO ASSIGN GRID CELL ID'S TO BOTH DFS : 
+# - WHEN.DF AND JACKRABBITS DF 
 
 
 #############################################################################
-
-
-
-
-
 
 
 
@@ -327,42 +351,101 @@ View(BTJR_When.df)
 #Changing Jackrabbit df from dataframe to sf object :  -----------
 sf::st_as_sf(Jackrabbits)
 
+#############################################################################
+#DO I NEED TO DO THIS FOR ANY OTHER OBJECTS?
+
+############################################################################
+  
+  
 
 ##Checking if geometry of spatial objects are valid :  -----------
-sf::st_is_valid(Jackrabbits)#look all true
+#
 all(st_is_valid(Jackrabbits))#TRUE
-any(is.na(st_dimension(Jackrabbits)))#no missing geometry
+all(is.na(st_dimension(Jackrabbits)))#no missing geometry
+#FALSE : is there NA=false for all ?
+
+all(sf:: st_is_valid(NCAboundary))#TRUE
+all(is.na(st_dimension(Jackrabbits)))#no missing geometry
+#FALSE: is there NA=false for all
 
 
-sf:: st_is_valid(NCAboundary)
-#TRUE
+all(sf:: st_is_valid(route_N))#TRUE
+all(is.na(st_dimension(route_N)))#no missing geometry
+#FALSE: is there NA=false for all
+
+all(sf:: st_is_valid(route_S))#TRUE
+all(is.na(st_dimension(route_S)))#no missing geometry
+#FALSE: is there NA=false for all
+
+
 
 
 #Checking CRS of all objects :  -----------
-sf::st_is_longlat(Jackrabbits)
+sf::st_is_longlat(NCAgrid300m)#TRUE: Jackrabbit,N&Sroute, 
+#FALSE: boundary . 300mgrid
+
 sf:: st_crs(Jackrabbits)#WGS84
-sf:: st_crs(NCAboundary)#NAD83
-sf:: st_crs(NCAgrid300m)
+sf:: st_crs(NCAboundary)#NAD83 / UTM zone 11N + NAVD88 height
+sf:: st_crs(NCAgrid300m)#+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs 
+sf:: st_crs(route_N)#WGS84
+sf:: st_crs(route_S)#WGS84
+
+
+
+
+
+
+
 
 #Transforming crs to match raster :  -----------
 
+#create a buffer around the NCA using outline of NCA and sf package:
+NCA_buf <- NCAboundary %>% sf::st_buffer( dist =5e3 )
 #create a version that matches coordinates of the predictor raster:
-NCAb_trans <- sf::st_transform( NCAboundary, st_crs( NCAgrid300m ) )#worked
+NCAb_trans <- sf::st_transform( NCA_buf, st_crs( NCAgrid300m ) )#worked
 #NCA boundary crs now same as NCSgrid300m raster 
 #Check that this is correct:
 st_crs(NCAb_trans) == st_crs(NCAgrid300m)
 #TRUE - so this is good to go
 
+#Check to see that the rest of the objects are in the same crs as raster:
 Jackrabbits_trans<-sf::st_transform( Jackrabbits, st_crs( NCAgrid300m ) )
-
 st_crs(Jackrabbits_trans) == st_crs(NCAgrid300m)
-#TRUE
+#TRUE 
+
+Nroute_trans<-sf::st_transform( route_N, st_crs( NCAgrid300m ) )
+st_crs(Nroute_trans) == st_crs(NCAgrid300m)
+#TRUE 
+
+Sroute_trans<-sf::st_transform( route_S, st_crs( NCAgrid300m ) )
+st_crs(Sroute_trans) == st_crs(NCAgrid300m)
+#TRUE 
+
+
+
 
 #Plotting Raster and Vector objects together to check :  -----------
 plot(NCAgrid300m)
 plot(st_geometry(NCAb_trans), add=TRUE)
 plot(st_geometry(Jackrabbits_trans), add=TRUE)
+plot(st_geometry(Nroute_trans), add=TRUE)
+plot(st_geometry(Sroute_trans), add=TRUE)
+
 #Worked good 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -374,7 +457,7 @@ st_bbox(Jackrabbits_trans)
 #-1626979  2409339 -1601886  2441791 
 st_bbox(NCAb_trans)
 #  xmin     ymin     xmax     ymax 
-#-1650957  2367880 -1565864  2449339 
+#-1655936  2362852 -1560889  2454363
 ext(NCAgrid300m)
 #SpatExtent : -1660905, -1555905, 2357685, 2459385 (xmin, xmax, ymin, ymax)
 
@@ -398,6 +481,55 @@ Jackrabbits_trans
 
 ##########################################################################
 
+##########
+##Northern Route:  [POINTS] -----------
+
+routeN_coord<-route_N # THIS WORKED 
+
+route_coord_crs<- sp::CRS("+proj=longlat
+                           +datum=WGS84")
+
+
+Ncoordinates<-sf:: st_as_sf(routeN_coord, 
+                            coords=c("Longitude", "Latitude"),
+                            crs=route_coord_crs)
+
+st_crs(Ncoordinates)
+
+Ncoordinates_aes<-sf::st_transform(Ncoordinates, crs(NCAgrid300m))
+#Checking that CSR of vector matches raster:
+st_crs(Ncoordinates_aes) == st_crs(NCAgrid300m)#TRUE!!
+#sf :: st_crs
+
+#View:
+plot(NCAgrid300m)
+plot(st_geometry(Ncoordinates_aes), add=TRUE)
+
+####### THAT WORKED!! 
+##SAVED IMAGE IN COMMON > JACKRABBITS > AUG SPOTLIGHT SURVEYS > R PLOTS > NCA300GRID+NorthRoute(pts)
+
+
+
+
+## Southern route: [POINTS] ----------- 
+routeS_coord<-route_S
+
+Scoordinates<-sf:: st_as_sf(routeS_coord, 
+                            coords=c("Longitude", "Latitude"),
+                            crs=route_coord_crs)
+
+st_crs(Scoordinates)
+
+Scoordinates_aes<-sf::st_transform(Scoordinates, crs(NCAgrid300m))
+
+st_crs(Scoordinates_aes) == st_crs(NCAgrid300m)#TRUE!!
+#sf :: st_crs
+
+plot(NCAgrid300m)
+plot(st_geometry(Scoordinates_aes), add=TRUE)
+##SAVED IMAGE IN COMMON > JACKRABBITS > AUG SPOTLIGHT SURVEYS > R PLOTS > NCA300GRID+NorthRoute(pts)
+
+####################
 
 
 
@@ -414,6 +546,67 @@ Jackrabbits_trans
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Visualizations: ---------------------------------------------------------
+
+#Making Histograms of Weather Variables:  -----------
+
+hist(BigRabdf_extended$Start_temp.F.)
+hist(BigRabdf_extended$Start_wind.km.h.)
+
+ggplot(data=BigRabdf_extended, aes(x=Start_temp.F.))+
+  geom_histogram(binwidth = 2, color="black", fill="seagreen")+
+  theme_bw()+
+  labs(x= "Start Temp. (F)", 
+       y= "Counts", 
+       title = "Histogram of Starting Tempatures (deg. F) 
+       for August 2022 Spotlight Surveys")
+#This is so much uglier then the base hist()?
+
+
+
+ggplot(data=BigRabdf_extended, aes(x=Start_wind.km.h.))+
+  geom_histogram(binwidth = 2, color="black", fill="seagreen")+
+  theme_bw()+
+  labs(x= "Start Wind. (Km/hr)", 
+       y= "Counts", 
+       title = "Histogram of Starting Wind (Km/hr) 
+       for August 2022 Spotlight Surveys")
+
+
+
+#Making histogram of Jackrabbit obs:
+
+ggplot(data = Jackrabbits, aes(x = DayOfYr))+
+  geom_histogram(binwidth = 1)
+
+ggplot(data = Jackrabbits, aes(x = Hour))+
+  geom_histogram(binwidth = 1)
+#NEED TO DEFINE X AXIS BORDERS 
+ggplot(data = Jackrabbits, aes(x=Hour))+
+  geom_bar()
+#NEED TO DEFINE X AXIS BORDERS - that show hour: 20-5 continuously to show 
+#distubution of #BTJR seen during these times
 
 
 
