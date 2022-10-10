@@ -9,7 +9,8 @@ rm( list = ls() )
 
 
 ## Load packages relevant to this script:  -------------
-
+#install.packages("oce")
+library(oce)
 library( tidyverse ) #package for easy data manipulation
 #install.packages("tidyverse") 
 library(ggplot2)
@@ -112,10 +113,6 @@ route_N#geometry: POINT, CRS: WGS84
 
 # Cleaning dfs: -----------------------------------------------------------
 
-##############################################################################
-
-
-##########
 # Preparing Data: ---------------------------------------------------------
 
 ## Cleaning data [ROUTES] :  -----------
@@ -136,7 +133,6 @@ route_N <- route_N %>%
   dplyr::select( ID, trksegID, lat, lon, geometry )
 #view
 route_N
-##########
 
 
 
@@ -266,7 +262,7 @@ BTJR_When.df <- site %>%
                 Spotlight_End.Time) 
 
 #Creating columns want to create:
-BTJR_When.df$Duration.Hrs<- "NA"
+BTJR_When.df$Duration<- "NA"
 BTJR_When.df$Sampling.Effort<- "NA"
 BTJR_When.df$CellID <- "NA"
 
@@ -293,19 +289,19 @@ BTJR_When.df <- BTJR_When.df %>%
   dplyr::select(Survey_ID,Night_number, Crew_name, 
                 Site, Start_MST.time, End_MST.time,
                 Start_temp.F.,Start_wind.km.h.,
-                Duration.Hrs, Sampling.Effort, CellID) 
+                Duration, Sampling.Effort, CellID) 
 
 #Configuring Duration.Hrs column from start and end times:
-BTJR_When.df$Duration.Hrs<-abs(difftime(BTJR_When.df$Start_MST.time, 
+BTJR_When.df$Duration<-abs(difftime(BTJR_When.df$Start_MST.time, 
                                     BTJR_When.df$End_MST.time, units = "mins"))
 
 #there is a problem with a few rows in the duration column
 #when it is switching from 23hr to midnight 00 that same night this function is
 #calculating the incorrect difftime in mins so i am going to manually change 
 #these values for now:
-BTJR_When.df$Duration.Hrs[2]<-"33"
-BTJR_When.df$Duration.Hrs[13]<-"35"
-BTJR_When.df$Duration.Hrs[15]<-"36"
+BTJR_When.df$Duration[2]<-"33"
+BTJR_When.df$Duration[13]<-"35"
+BTJR_When.df$Duration[15]<-"36"
 
 
 
@@ -326,7 +322,15 @@ for (r in 1:dim(BTJR_When.df)[1]){
 View(BTJR_When.df)
 
 
+# Calculating Moon Phase: -------------------------------------------------
 
+t<-BTJR_When.df$Start_MST.time
+f<-oce::moonAngle(t=t, 
+             longitude = -63.6,
+             latitude = 44.65)$illuminatedFraction
+
+plot(t, f, xlab="Day of 2022", ylab="Moon Fraction")
+grid()
 
 
 #############################################################################
@@ -438,17 +442,6 @@ plot(st_geometry(Sroute_trans), add=TRUE)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 # Checking extent and cropping raster to fit data more closely ------------
 
 ##Checking Extents :  -----------
@@ -461,10 +454,11 @@ st_bbox(NCAb_trans)
 ext(NCAgrid300m)
 #SpatExtent : -1660905, -1555905, 2357685, 2459385 (xmin, xmax, ymin, ymax)
 
+#########################################################################
 #WHAT DO I DO WITH THIS INFORMATION - HOW TO I CROP TO BETTER FIT THE 
 #JACKRABBIT DATA?
 
-
+#######################################################################
 
 
 ##Checking Resolutions :  -----------
@@ -479,59 +473,115 @@ Jackrabbits_trans
 ###########################################################################
 # NEXT NEED TO CROP THE MAP TO BETTER FIT THE BTJR POINTS ON THE MAP 
 
+NCA_crop<-raster::crop(x=NCAgrid300m, y=NCAb_trans)
+
+plot(NCA_crop)
+plot(Sroute_line, add=TRUE)
+plot(Jackrabbits_trans, add=TRUE)
+plot(Sroute_line, add=TRUE)#DOESNT WORK 
+
+
+
+# CANT FIGURE OUT HOW TO GET DAMN LINES ON RASTER MAP TO SHOW UP !
+
+
+
+#GOING TO MOVE ON TO WHAT I WOULD DO IF I COULD WITH THE LINES:
+
+#Converting transects to area (polygons):
+library(sp)
+
+sf_Sroute<-st_as_sf(Sroute_line)
+
+Sroute_poly<-st_polygonize(sf_Sroute)
+
+#transect each poly.with a grid cell:
+
+sf::st_transect
+
+
+
+
+
+
 ##########################################################################
 
-##########
-##Northern Route:  [POINTS] -----------
-
-routeN_coord<-route_N # THIS WORKED 
-
-route_coord_crs<- sp::CRS("+proj=longlat
-                           +datum=WGS84")
-
-
-Ncoordinates<-sf:: st_as_sf(routeN_coord, 
-                            coords=c("Longitude", "Latitude"),
-                            crs=route_coord_crs)
-
-st_crs(Ncoordinates)
-
-Ncoordinates_aes<-sf::st_transform(Ncoordinates, crs(NCAgrid300m))
-#Checking that CSR of vector matches raster:
-st_crs(Ncoordinates_aes) == st_crs(NCAgrid300m)#TRUE!!
-#sf :: st_crs
-
-#View:
-plot(NCAgrid300m)
-plot(st_geometry(Ncoordinates_aes), add=TRUE)
-
-####### THAT WORKED!! 
-##SAVED IMAGE IN COMMON > JACKRABBITS > AUG SPOTLIGHT SURVEYS > R PLOTS > NCA300GRID+NorthRoute(pts)
 
 
 
 
-## Southern route: [POINTS] ----------- 
-routeS_coord<-route_S
 
-Scoordinates<-sf:: st_as_sf(routeS_coord, 
-                            coords=c("Longitude", "Latitude"),
-                            crs=route_coord_crs)
+# Convert Route and BTJR Points to Raster CRS -----------------------------
+##Northern Route:  [LINES!] -----------
 
-st_crs(Scoordinates)
+route_N$lon<-as.numeric(route_N$lon)
+route_N$lat<-as.numeric(route_N$lat)
 
-Scoordinates_aes<-sf::st_transform(Scoordinates, crs(NCAgrid300m))
+pointz_Nroute<-cbind(x=route_N$lon, y=route_N$lat)
 
-st_crs(Scoordinates_aes) == st_crs(NCAgrid300m)#TRUE!!
-#sf :: st_crs
+
+crs<-"+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs "
+
+
+Nroute_line<-terra::vect(pointz_Nroute, crs=crs, type="line")
+
+plot(Nroute_line)# is in WGS84
+class(Nroute_line)#NOW A SPATRASTER/TERRA OBJECT 
+# [1] "SpatVector"
+# attr(,"package")
+# [1] "terra"
+
 
 plot(NCAgrid300m)
-plot(st_geometry(Scoordinates_aes), add=TRUE)
-##SAVED IMAGE IN COMMON > JACKRABBITS > AUG SPOTLIGHT SURVEYS > R PLOTS > NCA300GRID+NorthRoute(pts)
+plot(NCAgrid300m, add=TRUE)#WONT PLOT LINES ON TOP OF NCA GRID RASTER
 
-####################
+#checking crs matches raster:
+terra::crs(Nroute_line)#WGS84
+st_crs(Nroute_line) == st_crs(NCAgrid300m)
+#TRUE
 
 
+
+
+
+
+
+##Southern Route:  [LINES!] -----------
+
+Sroute_trans$lon<-as.numeric(Sroute_trans$lon)
+Sroute_trans$lat<-as.numeric(Sroute_trans$lat)
+
+pointz_Sroute<-cbind(x=Sroute_trans$lon, y=Sroute_trans$lat)
+
+crs<- "+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
+  #WONT WORK:st_crs(NCAgrid300m)
+
+
+Sroute_line<-terra::vect(pointz_Sroute, crs=crs, type="line")
+
+plot(Sroute_line)# is in WGS84
+
+class(Sroute_line)#NOW A SPATRASTER/TERRA OBJECT 
+# [1] "SpatVector"
+# attr(,"package")
+# [1] "terra"
+
+
+#checking crs matches raster:
+st_crs(Sroute_line) == st_crs(NCAgrid300m)
+#TRUE
+
+plot(NCAgrid300m)
+plot
+#terra::plot(Sroute_line, col,pch=16, alpha=0.5, lwd=1, lty=1, add=TRUE)#WONT PLOT LINES 
+
+###############################################################################
+#Trying to make raster 300m grid a spatvector to match terra:: spatvector the lines created
+
+Sroute_line<-terra::rast()
+#this did not help plot the line routes on top of the 300m grid
+
+##############################################################################
 
 
 
@@ -595,18 +645,63 @@ ggplot(data=BigRabdf_extended, aes(x=Start_wind.km.h.))+
 
 
 
-#Making histogram of Jackrabbit obs:
 
+# #Making histogram of Jackrabbit obs: ------------------------------------
+
+#Hist. of Day of yr.:
 ggplot(data = Jackrabbits, aes(x = DayOfYr))+
-  geom_histogram(binwidth = 1)
+  geom_histogram(binwidth = 1.5, color="black", fill="seagreen")+
+  theme_bw()+
+  labs(x= "Day of Year (Aug.2022)", 
+       y= "Black-tailed Jackrabbit Counts", 
+       title = "Histogram of Jackrabbits per Day of Year for August 2022 Spotlight Surveys")
 
+#Hist. of hour of day:
 ggplot(data = Jackrabbits, aes(x = Hour))+
-  geom_histogram(binwidth = 1)
-#NEED TO DEFINE X AXIS BORDERS 
-ggplot(data = Jackrabbits, aes(x=Hour))+
-  geom_bar()
+  geom_histogram(binwidth = 1.5, color="black", fill="seagreen")+
+  theme_bw()+
+  labs(x= "Hour of Night (Aug.2022)", 
+       y= "Black-tailed Jackrabbit Counts", 
+       title = "Histogram of Jackrabbits per Hour of Night for August 2022 Spotlight Surveys")
 #NEED TO DEFINE X AXIS BORDERS - that show hour: 20-5 continuously to show 
 #distubution of #BTJR seen during these times
+
+#Hist. of Survey Night using jackrabbit df:
+#Jackrabbits$SurveyNight<-as.factor(Jackrabbits$SurveyNight)
+ggplot(data = Jackrabbits_trans, aes(x = SurveyNight, stat="count"))+
+  geom_histogram()
+#Does not work 
+
+ggplot(Jackrabbits, aes(SurveyNight))+
+  geom_bar(color="black", fill="seagreen")+
+  theme_classic()+
+  labs(x= "Survey Night (Aug.2022)", 
+       y= "Black-tailed Jackrabbit Counts", 
+       title = "Bar Graph of Jackrabbits per Survey Night for August 2022 Spotlight Surveys")
+
+
+#Duration of time Sites were surveyed 
+#ggplot( data = BTJR_When.df, aes(x = RouteID, y = Duration.Hrs)
+#ggplot(BTJR_When.df, aes(x=))
+
+ggplot(BTJR_When.df, aes(paste0(Duration)))+
+  geom_bar()
+#not really what i am looking for i dont think 
+ggplot(BTJR_When.df, aes(x=RouteID, y=paste0(Duration), color=RouteID))+
+  theme_bw()+
+  geom_point()
+#worked but, the points look like they should be bars but this ggplot wont 
+#work if i use geom_bar right now
+
+
+
+
+
+
+
+
+
+
 
 
 
