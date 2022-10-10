@@ -689,11 +689,44 @@ ggplot(BTJR_When.df, aes(paste0(Duration)))+
 #not really what i am looking for i dont think 
 ggplot(BTJR_When.df, aes(x=RouteID, y=paste0(Duration), color=RouteID))+
   theme_bw()+
-  geom_point()
+  geom_point()+
+  labs(x= "Routes", 
+       y= "Duration (mins) Spent Surveying the Sites Found within each Route", 
+       title = "Survey Duration Time per Route for August 2022 Spotlight Surveys")
 #worked but, the points look like they should be bars but this ggplot wont 
 #work if i use geom_bar right now
 
 
+#site vs jackrabbit obs:
+ggplot()
+
+
+
+
+
+
+# Correlation Plots: ------------------------------------------------------
+
+#Weather conditions; wind, temp:
+cor.test(BTJR_When.df$Start_temp.F., BTJR_When.df$Start_wind.km.h.)
+#cor =0.137755
+#Not strongly correlated 
+# A correlation coefficient higher than 0.8 or lower than -0.8 
+#is considered strongly correlated 
+
+
+#duration and route ID:
+# BTJR_When.df$Duration<-as.numeric(BTJR_When.df$Duration)
+# cor.test(BTJR_When.df$Duration, BTJR_When.df$RouteID)
+#DOESNT WORK - DONT USE FACTOR VARIABLES (EX:ROUTEID) IN COR TEST
+
+
+
+
+#moon phase and jackrabbit obs: ?
+
+
+#time of night and jackrabbit obs.: ? 
 
 
 
