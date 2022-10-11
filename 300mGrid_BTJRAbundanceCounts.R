@@ -15,9 +15,12 @@ library( tidyverse ) #package for easy data manipulation
 #install.packages("tidyverse") 
 library(ggplot2)
 library(lubridate)
-library(sf)
 library(terra)
+#library(sp)
+#install.packages("stars")
+library(stars)
 library(raster)
+library(sf)
 
 
 
@@ -102,8 +105,15 @@ plot(route_N )
 route_N#geometry: POINT, CRS: WGS84
 
 
+##########################################################################
+
+# Importing North and South Route [Line Shape files]: ------------------------
+lineN<- sf::st_read( paste0(datapath, 
+                            "BTJR_Aug22_Spotlights_shp/N_RouteLine.shp"))
 
 
+lineS<- sf::st_read( paste0(datapath, 
+                            "BTJR_Aug22_Spotlights_shp/S_RouteLine.shp"))
 
 
 
@@ -381,6 +391,14 @@ all(sf:: st_is_valid(route_S))#TRUE
 all(is.na(st_dimension(route_S)))#no missing geometry
 #FALSE: is there NA=false for all
 
+all(sf:: st_is_valid(lineN))#TRUE
+all(is.na(st_dimension(lineN)))#no missing geometry
+#FALSE: is there NA=false for all
+
+all(sf:: st_is_valid(lineS))#TRUE
+all(is.na(st_dimension(lineS)))#no missing geometry
+#FALSE: is there NA=false for all
+
 
 
 
@@ -393,6 +411,9 @@ sf:: st_crs(NCAboundary)#NAD83 / UTM zone 11N + NAVD88 height
 sf:: st_crs(NCAgrid300m)#+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs 
 sf:: st_crs(route_N)#WGS84
 sf:: st_crs(route_S)#WGS84
+sf:: st_crs(lineN)#WGS84
+sf:: st_crs(lineS)#WGS84
+
 
 
 
@@ -428,10 +449,38 @@ st_crs(Sroute_trans) == st_crs(NCAgrid300m)
 
 
 
+#Creating buffer around the N. and S. line routes before transforming them: -----------
+lineN_buf<-lineN%>%
+  sf::st_buffer(dist = 10)#10m buffer
+
+lineS_buf<-lineS%>%
+  sf::st_buffer(dist = 10)#10m buffer
+
+
+#transforming vector to match raster:
+lineN_trans<-sf::st_transform( lineN_buf, st_crs( NCAgrid300m ) )
+st_crs(lineN_trans) == st_crs(NCAgrid300m)
+#TRUE 
+
+lineS_trans<-sf::st_transform( lineS_buf, st_crs( NCAgrid300m ) )
+st_crs(lineS_trans) == st_crs(NCAgrid300m)
+#TRUE
+
+
+
+
+
+
 #Plotting Raster and Vector objects together to check :  -----------
 plot(NCAgrid300m)
 plot(st_geometry(NCAb_trans), add=TRUE)
 plot(st_geometry(Jackrabbits_trans), add=TRUE)
+
+plot(st_geometry(lineN_trans), add=TRUE)
+plot(st_geometry(lineS_trans), add=TRUE)
+#Finally worked as one continuous line!
+
+
 plot(st_geometry(Nroute_trans), add=TRUE)
 plot(st_geometry(Sroute_trans), add=TRUE)
 
@@ -474,30 +523,74 @@ Jackrabbits_trans
 # NEXT NEED TO CROP THE MAP TO BETTER FIT THE BTJR POINTS ON THE MAP 
 
 NCA_crop<-raster::crop(x=NCAgrid300m, y=NCAb_trans)
-
 plot(NCA_crop)
-plot(Sroute_line, add=TRUE)
-plot(Jackrabbits_trans, add=TRUE)
-plot(Sroute_line, add=TRUE)#DOESNT WORK 
+plot(st_geometry(NCAb_trans), add=TRUE)
+plot(st_geometry(Jackrabbits_trans), add=TRUE)
+
+plot(st_geometry(lineN_trans), add=TRUE)
+plot(st_geometry(lineS_trans), add=TRUE)
+
+############################################################################
+# NEED TO FIGURE OUT HOW TO CHANGE THE COLORS OF EACH LAYER OR HOW TO USE 
+# GGPLOT WITH SPATIAL DATA 
+###########################################################################
 
 
 
-# CANT FIGURE OUT HOW TO GET DAMN LINES ON RASTER MAP TO SHOW UP !
 
 
 
-#GOING TO MOVE ON TO WHAT I WOULD DO IF I COULD WITH THE LINES:
 
-#Converting transects to area (polygons):
-library(sp)
+##############################################################################
+# BELOW CODE = WORKING TOWARDS ANALYSIS STEPS - CALCULATING SAMPLING EFFORT
+#               AND ASSIGNING TRANSECTING GRID CELLS TO POLYGON ROUTE LINES
+##############################################################################
 
-sf_Sroute<-st_as_sf(Sroute_line)
+#Converting transects to area (polygons) :  -----------
 
-Sroute_poly<-st_polygonize(sf_Sroute)
+#Nline_trans and Sline_trans = already a polygon sf data.frame
+#   - don't need to convert here it looks like 
 
-#transect each poly.with a grid cell:
 
-sf::st_transect
+
+#transect each poly.with a grid cell :  -----------
+
+class(lineN_trans)#"sf" "data.frame"
+
+#Looks like i need to rasterize these polygons before next steps(?):
+stars::st_rasterize()
+
+
+
+
+
+
+sf::st_transect(..., simplify=FALSE)
+st_intersects(x, y, sparse = TRUE, ...)
+
+
+
+
+
+#Estimate the area of intersecting polys. with a grid cell :  -----------
+
+#This step is to figure out how much of each poly. in each cell;
+#   -Want area pieces of geometery
+sf::st_area()
+
+
+# To get proportion and sampling effort :  -----------
+terra::extract()
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -510,6 +603,13 @@ sf::st_transect
 
 
 
+##############################################################################
+# THIS IS THE OLD WAY (WITH OUT USING ROUTE LINE SHAPE FILES CREATED IN ARCGIS)
+#TO CONVERT THE POINTS COLLECTED FROM GPS UNITS OF N. AND S. ROUTES 
+# WAS NOT ABLE TO GET THESE TO PLOT ON THE RASTER STILL - SO I CREATED POINT TO
+#LINE SHAPE FILES FOR THE N. AND S. ROUTES IN ARCGIS TO BY PASS THIS PROBLEM 
+# FOR NOW - TO HASSEN ANALYSIS STEPS NEEDED TO TAKE ABOVE
+##############################################################################
 
 # Convert Route and BTJR Points to Raster CRS -----------------------------
 ##Northern Route:  [LINES!] -----------
@@ -539,8 +639,6 @@ plot(NCAgrid300m, add=TRUE)#WONT PLOT LINES ON TOP OF NCA GRID RASTER
 terra::crs(Nroute_line)#WGS84
 st_crs(Nroute_line) == st_crs(NCAgrid300m)
 #TRUE
-
-
 
 
 
