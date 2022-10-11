@@ -564,8 +564,6 @@ stars::st_rasterize()
 
 
 
-
-
 sf::st_intersects(x=st_geometry(lineN_trans), y=NCA_crop, sparse = TRUE, simplify=FALSE )
 #Error in UseMethod("st_geometry") : 
 #no applicable method for 'st_geometry' applied to an object of class 
