@@ -540,7 +540,8 @@ plot(st_geometry(lineS_trans), add=TRUE)
 
 
 
-
+##############################################################################
+##############################################################################
 ##############################################################################
 # BELOW CODE = WORKING TOWARDS ANALYSIS STEPS - CALCULATING SAMPLING EFFORT
 #               AND ASSIGNING TRANSECTING GRID CELLS TO POLYGON ROUTE LINES
@@ -559,16 +560,30 @@ class(lineN_trans)#"sf" "data.frame"
 
 #Looks like i need to rasterize these polygons before next steps(?):
 stars::st_rasterize()
+######## ???
 
 
 
 
 
+sf::st_intersects(x=st_geometry(lineN_trans), y=NCA_crop, sparse = TRUE, simplify=FALSE )
+#Error in UseMethod("st_geometry") : 
+#no applicable method for 'st_geometry' applied to an object of class 
+#"c('RasterLayer', 'Raster', 'BasicRaster')"
 
-sf::st_transect(..., simplify=FALSE)
-st_intersects(x, y, sparse = TRUE, ...)
+
+#sf::st_transect(..., simplify=FALSE)
+st_intersecting(x, y, sparse = TRUE, ...)
 
 
+#############################################################################3
+# DONT KNOW HOW TO GET THE RASTER LAYER TO OVERLAY WITH POLYGON SF DATA.FRAME
+# - INTERSECTS OR TRANSECTS SF OBJECT WITH RASTER GRID CELLS 
+# - DONT KNOW HOW TO ASSIGN GRID CELL ID'S TO LINES 
+# - DO I NEED TO CONVERT RASTER LAYER TO A VECTOR SF OBJECT TO DO THIS?
+# 
+# AFTER THIS I CAN CALCULATE AREA OF EACH POLY IN GRIDCELLS USING ST_AREA
+#############################################################################3
 
 
 
@@ -595,9 +610,9 @@ terra::extract()
 
 
 
-
-
-##########################################################################
+##############################################################################
+##############################################################################
+##############################################################################
 
 
 
