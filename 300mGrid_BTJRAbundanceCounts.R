@@ -21,6 +21,9 @@ library(terra)
 library(stars)
 library(raster)
 library(sf)
+#install.packages("fasterize")
+library(fasterize)
+install.packages(rgis)
 
 
 
@@ -473,7 +476,7 @@ st_crs(lineS_trans) == st_crs(NCAgrid300m)
 
 #Plotting Raster and Vector objects together to check :  -----------
 plot(NCAgrid300m)
-plot(st_geometry(NCAb_trans), add=TRUE)
+plot(st_geometry(NCAb_trans))
 plot(st_geometry(Jackrabbits_trans), add=TRUE)
 
 plot(st_geometry(lineN_trans), add=TRUE)
@@ -527,7 +530,7 @@ plot(NCA_crop)
 plot(st_geometry(NCAb_trans), add=TRUE)
 plot(st_geometry(Jackrabbits_trans), add=TRUE)
 
-plot(st_geometry(lineN_trans), add=TRUE)
+plot(st_geometry(lineN_trans), add=TRUE, col="red")
 plot(st_geometry(lineS_trans), add=TRUE)
 
 ############################################################################
@@ -595,9 +598,10 @@ sf::st_area()
 # To get proportion and sampling effort :  -----------
 terra::extract()
 
+#####################################################
 
-
-
+polygon_to_raster(lineN_trans, NCAgrid300m, field = NULL, fun, background = NA_real_,
+                  by = NULL)
 
 
 
@@ -779,7 +783,7 @@ ggplot(data = Jackrabbits, aes(x = Hour))+
 
 #Hist. of Survey Night using jackrabbit df:
 #Jackrabbits$SurveyNight<-as.factor(Jackrabbits$SurveyNight)
-ggplot(data = Jackrabbits_trans, aes(x = SurveyNight, stat="count"))+
+ggplot(data = Jackrabbits_trans, aes(x = as.numeric(DayOfYr) ))+
   geom_histogram()
 #Does not work 
 

@@ -62,15 +62,15 @@ library( tidyverse ) #package for easy data manipulation
 #Use this is package is not already installed or is not loaded properly 
 # set option to see all columns and more than 10 rows
 options( dplyr.width = Inf, dplyr.print_min = 100 )#for visual aid 
+library(lubridate)#used to organize and format date and time data 
 library( sf )#package for spatial data manipulation for vector data 
 #install.packages("sf")
 library( raster ) #for raster manipulation
 #Can create raster layers objects using raster function within raster package:
 library( rasterVis ) #for raster visualization
-library(RColorBrewer)
+#library(RColorBrewer)
 library( terra ) #for raster vis and manipulation 
-library(lubridate)#used to organize and format date and time data 
-library(rgdal)
+#library(rgdal)
 library(ggplot2)
 
 ## End of package load -------------
@@ -374,9 +374,9 @@ view(BTJRdf)
 
 ##Checking if geometry of spatial objects are valid :  -----------
 sf::st_is_valid(NCAboundary)#TRUE
-sf::st_is_valid(route_N)#TRUE - so these are valid geometry
-sf::st_is_valid(route_S)#TRUE
-any(is.na(st_is_valid(route_S)))#FALSE - checked both N and S
+all(sf::st_is_valid(route_N))#TRUE - so these are valid geometry
+all(sf::st_is_valid(route_S))#TRUE
+all(is.na(st_is_valid(route_S)))#FALSE - checked both N and S
 #So, there is no NAs in these lines 
 
 
@@ -455,9 +455,13 @@ route_N$lat<-as.numeric(route_N$lat)
 pointz_Nroute<-cbind(x=route_N$lon, y=route_N$lat)
 
 
-crs<-"+proj=longlat +datum=WGS84"
+
+crs<-"+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs "
+
 
 Nroute_line<-terra::vect(pointz_Nroute, crs=crs, type="line")
+
+
 
 
 plot(Nroute_line)# is in WGS84
@@ -467,8 +471,15 @@ class(Nroute_line)#NOW A SPATRASTER/TERRA OBJECT
 # attr(,"package")
 # [1] "terra"
 
+
+plot(NCAgrid300m)
+plot(NCAgrid300m, add=TRUE)#WONT PLOT LINES ON TOP OF NCA GRID RASTER
+
 #checking crs matches raster:
 terra::crs(Nroute_line)#WGS84
+st_crs(Nroute_line) == st_crs(NCAgrid300m)
+#TRUE
+
 
 
 
@@ -499,52 +510,6 @@ terra::crs(Sroute_line)#WGS84
 
 
 
-##Northern Route:  [POINTS] -----------
-
-routeN_coord<-route_N # THIS WORKED 
-
-route_coord_crs<- sp::CRS("+proj=longlat
-                           +datum=WGS84")
-
-
-Ncoordinates<-sf:: st_as_sf(routeN_coord, 
-                            coords=c("Longitude", "Latitude"),
-                            crs=route_coord_crs)
-
-st_crs(Ncoordinates)
-
-Ncoordinates_aes<-sf::st_transform(Ncoordinates, crs(NCAgrid300m))
-#Checking that CSR of vector matches raster:
-st_crs(Ncoordinates_aes) == st_crs(NCAgrid300m)#TRUE!!
-#sf :: st_crs
-
-#View:
-plot(NCAgrid300m)
-plot(st_geometry(Ncoordinates_aes), add=TRUE)
-
-####### THAT WORKED!! 
-##SAVED IMAGE IN COMMON > JACKRABBITS > AUG SPOTLIGHT SURVEYS > R PLOTS > NCA300GRID+NorthRoute(pts)
-
-
-
-
-## Southern route: [POINTS] ----------- 
-routeS_coord<-route_S
-
-Scoordinates<-sf:: st_as_sf(routeS_coord, 
-                            coords=c("Longitude", "Latitude"),
-                            crs=route_coord_crs)
-
-st_crs(Scoordinates)
-
-Scoordinates_aes<-sf::st_transform(Scoordinates, crs(NCAgrid300m))
-
-st_crs(Scoordinates_aes) == st_crs(NCAgrid300m)#TRUE!!
-#sf :: st_crs
-
-plot(NCAgrid300m)
-plot(st_geometry(Scoordinates_aes), add=TRUE)
-##SAVED IMAGE IN COMMON > JACKRABBITS > AUG SPOTLIGHT SURVEYS > R PLOTS > NCA300GRID+NorthRoute(pts)
 
 
 
