@@ -220,6 +220,15 @@ for (r in 1:dim(J_df.Site)[1]){
 
 
 
+# Rab. Locations Cleaning: ------------------------------------------------
+
+#June22:
+#Selecting columns of interest:
+J_Rab<- J_Rab %>%
+  dplyr::select(RabID, Crew_name, Night_number,Rab.Obv, Name, Date, lat, lon, RouteID)
+
+
+
 
 
 
