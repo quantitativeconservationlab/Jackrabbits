@@ -66,6 +66,8 @@
 
 ############# ENTER PSEUDO CODE HERE IN FUTURE ###############################
 ########### PULL FROM AugBTJRRoute_DatasheetDataCleaning.R Script ##################
+############ - Put in this first script and not the following 2 ###########
+########### - only put relevant pseudo code / background notes etc. in to that particular script ##########
 
 #########################################################################################
 
@@ -246,7 +248,7 @@ write.csv( x = J_df.Site, file = "Site_June22" )
 
 ## Save work space:   -----------
 # saving all data to the path
-save.image("xxxx.RData")
+save.image("Opt_Site.RData")
 
 
 
