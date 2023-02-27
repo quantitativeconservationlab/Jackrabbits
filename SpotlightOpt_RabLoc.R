@@ -45,7 +45,6 @@ library(ggplot2)
 library(lubridate)
 library(tidyr)
 library(dplyr)
-library(sf)
 
 
 
@@ -202,79 +201,6 @@ Jrab.filtered <- Jrab[!row.has.na,]
 Jrab<-Jrab.filtered
 
 
-#Manipulating June df to include a sf geometry object/col:  -----------
-
-proj <- st_crs('+proj=longlat +datum=WGS84')
-
-long <- Jrab$lon
-lat <- Jrab$lat
-st_multipoint(cbind(long, lat)) %>% st_sfc(., crs = proj)
-
-
-#plot points:
-plot(st_multipoint(cbind(long, lat)) %>% 
-       st_sfc(., crs = proj))#worked 
-  
-
-#Convert a dataframe to a sf object:
-Jrab_sf = st_as_sf(Jrab, coords = c("lon", "lat"), 
-                    crs = 4326, agr = 
-                      "constant")# now will have a geometry column 
-
-
-
-
-
-
-# 
-#Manipulating AUG df to include a sf geometry object/col:  -----------
-
-Along <- Arab$lon
-Alat <- Arab$lat
-st_multipoint(cbind(Along, Alat)) %>% st_sfc(., crs = proj)
-
-
-#plot points:
-plot(st_multipoint(cbind(Along, Alat)) %>% 
-       st_sfc(., crs = proj))#worked 
-
-
-#Convert a dataframe to a sf object:
-Arab_sf = st_as_sf(Arab, coords = c("lon", "lat"), 
-                   crs = 4326, agr = 
-                     "constant")# now will have a geometry column 
-
-#Check:
-view(Arab_sf)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -283,8 +209,8 @@ view(Arab_sf)
 ## Save csv's:   -----------
 
 # Save cleaned csv:
-write.csv( x = Arab_sf, file = "Arab_sf" )
-write.csv( x = Jrab_sf, file = "Jrab_sf" )
+write.csv( x = Arab, file = "Arab" )
+write.csv( x = Jrab, file = "Jrab" )
 
 
 
@@ -298,7 +224,7 @@ save.image("Opt_RabLoc")
 
 # loading the work space:   -----------
 
-#load("Opt_RabLoc.RData")
+load("Opt_RabLoc.RData")
 
 
 
