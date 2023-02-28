@@ -33,11 +33,11 @@ rm( list = ls() )
 library(oce)# used for moon phase information
 library( tidyverse ) #package for easy data manipulation
 #install.packages("tidyverse") 
-library(ggplot2)
-library(lubridate)
-library(tidyr)
-library(dplyr)
-library(sf)
+# library(ggplot2)
+# library(lubridate)
+# library(tidyr)
+# library(dplyr)
+ library(sf)
 library(raster)
 
 
@@ -81,26 +81,24 @@ rastpath<-"Z:/Common/QCLData/Habitat/NLCD_new/NCA_raster_summaries_300m/"
 
 # August22:
 
-Asite<- read.csv(paste0(datapath, "Spotlights/Aug22/BigRabdf_extended.csv"))
+Asite <- read.csv(paste0(datapath, "Spotlights/Aug22/BigRabdf_extended.csv"))
 #site level info for August 2022 spotlight surveys 
-Arab<-
-  read.csv(paste0(datapath, "Spotlights/Aug22/Arab"))
+Arab <- read.csv(paste0(datapath, "Spotlights/Aug22/Arab.csv"))
 #Rab locations for August 2022 spotlight surveys 
   
 # June22:
 
-Jsite<-read.csv(paste0(datapath, "Spotlights/June22/Site_June22"))
+Jsite<-read.csv(paste0(datapath, "Spotlights/June22/Site_June22.csv"))
 #site level info for June 2022 spotlight surveys 
 
-Jrab<-
-  read.csv(paste0(datapath, "Spotlights/June22/Jrab"))
+Jrab <- read.csv(paste0(datapath, "Spotlights/June22/Jrab.csv"))
 #Rab locations for June 2022 spotlight surveys 
 
 str(Jrab)
 #NOTICING MISTAKE : *** SOMEHOW JRAB LAT/LON GOT COL NAMES SWITCHED
 #NEED TO FIX:
-names(Jrab)[names(Jrab)=="lat"]<-'long'
-names(Jrab)[names(Jrab)=="lon"]<-'lat'
+names(Jrab)[names(Jrab)=="lat"] <-'long'
+names(Jrab)[names(Jrab)=="lon"] <-'lat'
 
 View(Jrab)#Worked 
 #now change long to lon to match Arab df:
@@ -114,43 +112,42 @@ names(Jrab)[names(Jrab)=="long"]<-'lon'
 #Manipulating June df to include a sf geometry object/col:  -----------
 
 #June22:  -----------
-proj <- st_crs('+proj=longlat +datum=WGS84')
+#proj <- st_crs('+proj=longlat +datum=WGS84')
+proj <- 4326
+# Jlon <- Jrab$lon
+# Jlat <- Jrab$lat
+# 
+# st_multipoint(cbind(Jlon, Jlat)) %>% st_sfc(., crs = proj)
+# 
 
-Jlon <- Jrab$lon
-Jlat <- Jrab$lat
-st_multipoint(cbind(Jlon, Jlat)) %>% st_sfc(., crs = proj)
-
-
-#plot points:
-plot(st_multipoint(cbind(Jlon, Jlat)) %>% 
-       st_sfc(., crs = proj))#worked 
+# #plot points:
+# plot(st_multipoint(cbind(Jlon, Jlat)) %>% 
+#        st_sfc(., crs = proj))#worked 
 
 
 #Convert a dataframe to a sf object:
-Jrab_sf = st_as_sf(Jrab, coords = c("lon", "lat"), 
-                   crs = 4326, agr = 
-                     "constant")# now will have a geometry column 
+Jrab_sf <- st_as_sf( Jrab, coords = c("lon", "lat"), 
+                   crs = proj )# now will have a geometry column 
 
-
+Jrab_sf
 #Manipulating AUG df to include a sf geometry object/col:  -----------
 
-Alon <- Arab$lon
-Alat <- Arab$lat
-st_multipoint(cbind(Alon, Alat)) %>% st_sfc(., crs = proj)
-
-
-#plot points:
-plot(st_multipoint(cbind(Alon, Alat)) %>% 
-       st_sfc(., crs = proj))#worked 
-
+# Alon <- Arab$lon
+# Alat <- Arab$lat
+# st_multipoint(cbind(Alon, Alat)) %>% st_sfc(., crs = proj)
+# 
+# 
+# #plot points:
+# plot(st_multipoint(cbind(Alon, Alat)) %>% 
+#        st_sfc(., crs = proj))#worked 
+# 
 
 #Convert a dataframe to a sf object:
-Arab_sf = st_as_sf(Arab, coords = c("lon", "lat"), 
-                   crs = 4326, agr = 
-                     "constant")# now will have a geometry column 
+Arab_sf <- st_as_sf(Arab, coords = c("lon", "lat"), 
+                   crs = 4326)# now will have a geometry column 
 
 #Check:
-view(Arab_sf)
+Arab_sf
 
 
 
@@ -227,15 +224,15 @@ all(is.na(st_dimension(S.Route)))#no missing geometry
 #Checking CRS of all objects :  -----------
 sf::st_is_longlat(NCAgrid300m)#FALSE
 
-sf:: st_crs(Jrab_sf)#WGS84, EPSG:4326
-sf:: st_crs(Arab_sf)#WGS84, EPSG:4326
+sf::st_crs(Jrab_sf)#WGS84, EPSG:4326
+sf::st_crs(Arab_sf)#WGS84, EPSG:4326
 
-sf:: st_crs(NCAboundary)#NAD83 / UTM zone 11N + NAVD88 height
+sf::st_crs(NCAboundary)#NAD83 / UTM zone 11N + NAVD88 height
 
-sf:: st_crs(NCAgrid300m)#+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs 
+sf::st_crs(NCAgrid300m)#+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs 
 
-sf:: st_crs(N.Route)#WGS84
-sf:: st_crs(S.Route)#WGS84
+sf::st_crs(N.Route)#WGS84
+sf::st_crs(S.Route)#WGS84
 
 
 
@@ -277,8 +274,8 @@ st_crs(Sroute_rast) == st_crs(NCAgrid300m)
 
 #Plotting Raster and Vector objects together to check :  -----------
 plot(NCAgrid300m)
-plot(st_geometry(NCAb_rast))
-plot(st_geometry(Arab_rast), add=TRUE)
+plot(st_geometry(NCAb_rast), add=TRUE)
+plot(st_geometry(Arab_rast), add=TRUE, col = "green")
 plot(st_geometry(Jrab_rast), add=TRUE, col="black")
 
 plot(st_geometry(Nroute_rast), add=TRUE, col="red")

@@ -26,7 +26,7 @@ rm( list = ls() )
 # workspace contains correctly formatted Aug and June 2022 Site csv's and rab loc
 # - Rab loc need to be formatted : = purpose of this cleaning rab loc script 
 
-load("Opt_Site.RData")
+#load("Opt_Site.RData")
 
 
 
@@ -38,13 +38,15 @@ load("Opt_Site.RData")
 
 
 #install.packages("oce")
-library(oce)# used for moon phase information
+# library(oce)# used for moon phase information
 library( tidyverse ) #package for easy data manipulation
+# set option to see all columns and more than 10 rows
+options( dplyr.width = Inf, dplyr.print_min = 100 )
 #install.packages("tidyverse") 
-library(ggplot2)
-library(lubridate)
-library(tidyr)
-library(dplyr)
+# library(ggplot2)
+# library(lubridate)
+# library(tidyr)
+# library(dplyr)
 
 
 
@@ -74,33 +76,38 @@ workdir <- getwd()
 #Creating pathway to call the BTJR data from the common drive
 datapath <- "Z:/Common/Jackrabbits/Data/Spotlights/" 
 
+Arab <- read.csv( paste0( datapath, "Aug22/BTJR.obs_AUG_Clean.csv") )
+Jrab <- read.csv( file = paste0(datapath, "June22/Rab.Loc_Simplified.Edit.csv"))
 
+Asite <- read.csv(paste0(datapath, "Aug22/BigRabdf_extended.csv") )
+Jsite <- read.csv(paste0(datapath, "June22/Site_June22.csv") )
 
 # View rab loc data pulled from "Opt_Site.RData" work space:  -----------
 
 # Aug 2022 RabLoc data:  -----------
-Arab<- A_Rab# renaming it something smaller
-view(Arab)
-str(Arab)
+view(Arab);str(Arab)
 # --> noticing that the geometry column has been split into 2 columns 
 #   - will need to join these together so it can be read by sf package/spatial 
 
 
 # June 2022 RabLoc data:  -----------
-Jrab<- J_Rab# renaming it something smaller
-view(Jrab)
-str(Jrab)
+view(Jrab);str(Jrab)
+head( Jrab)
 
+#cleaning by removing the X column
+Jrab <- Jrab %>%  dplyr::select( -X ) 
 
 # Aug 2022 site data:  -----------
-Asite<- A_SiteInfo# renaming it something smaller
-view(Asite)
-str(Asite)
+view(Asite); str(Asite)
 
 # June 2022 site data:  -----------
-Jsite<- J_Site# renaming it something smaller
-view(Jsite)
-str(Jsite)
+view(Jsite);str(Jsite)
+
+#also checking unique sites
+unique(Jsite$Site)
+#note that there are two naming formats for bigfoot
+#fix
+Jsite$Site[ which( Jsite$Site == "bigfoot_butte")] <- "Bigfoot_butte"
 
 ##############################################################################
 ######### NEED TO DISCUSS W/JC: MISSING JUNE DATA FROM SpotlightOpt._SiteInfo############
@@ -117,7 +124,7 @@ str(Jsite)
 #Fixing geometry col. in Aug rabloc data:  -----------
 Arab$geometry<- paste(Arab$geometry, Arab$X, sep = ",")
 View(Arab)
-
+head(Arab)
 # geting rid of the unneeded column:  
 Arab<- Arab[-11]
 
@@ -169,6 +176,69 @@ view(Jrab)
 # Because June we used the tablets we are missing the exact time of night that 
 # each gps points were taken --> so we can not (at this time) configure hour, 
 # and thus cant config. MST.time either right now
+
+
+### turn times into lubridate times and dates
+Jsite <- Jsite %>% 
+  mutate( Route_start = lubridate::ymd_hm( paste( Date, Start_time, sep = " " ),
+                                           tz = "MST" ), 
+          Route_end = lubridate::ymd_hm( paste( Date, End_time, sep = " " ),
+                                           tz = "MST" ) )
+#check
+head( Jsite)
+
+#fix missing value for Simco on Night number 7....assume it's 1 hour later 
+#based on how long it took on other nights
+NAid <- which( is.na( Jsite$Route_end ))
+Jsite$Route_end[NAid] <- Jsite$Route_start[NAid] + hours(1) 
+# extract rough start and end times for each route from site level info
+# for each crew 
+
+Jsite <- Jsite %>%  arrange( Night_number ) %>% 
+  group_by( Night_number, Crew_name ) %>% 
+  arrange( DayofYr, Start_time ) %>% 
+  mutate( 
+    Route_starttime = ifelse( first(Site) == "Bigfoot_butte", 
+                  as.character( first(Route_start) - hours(1) - minutes(15) ),
+          ifelse( first(Site) == "Simco", 
+                  as.character( first(Route_start) - minutes(15) ),
+                  as.character(first(Route_start) - minutes(30) ) ) ), 
+    Route_endtime = ifelse( last( Site ) == "Simco", 
+                    as.character( last(Route_end) +  minutes(15) ),
+          ifelse( last(Site) == "Bigfoot_butte", 
+                  as.character( last(Route_end) + hours(1) + minutes(15) ),
+                   as.character( last(Route_end) + minutes(30) ) ) )  )
+
+#check
+head(Jsite)
+
+
+#Now I create a routebased dataframe for June that only contains the relevant 
+# columns that we need at the site level 
+JRoutes <- Jsite %>% 
+  #group by crew and night
+  group_by( Crew_name, Night_number ) %>% 
+  #get mean temperature and wind 
+  summarise( RouteID = first(RouteID),
+    temp.F = mean( Start_temp.F., na.rm = TRUE),
+          wind.km.h = mean( Start_wind.km.h., na.rm = TRUE),
+          Start_time = first(Route_starttime),
+          End_time = last(Route_endtime),
+          StartJday = first(DayofYr),
+          EndJday = last(DayofYr) ) 
+
+#check 
+JRoutes
+
+#Now add end and start times to Jrab
+tail(Jrab);dim(Jrab)
+#check data
+unique(Jrab$RouteID)
+#note that there are missing values
+# I remove missing values here instead of later # sorry Leti
+Jrab <- Jrab[ which(!is.na(Jrab$Night_number ) ), ] 
+
+
 #############################################################################
 ############### WILL BE ASKING JC WHAT TO DO ABOUT THIS FEB.24 ###########
 #########################################################################
@@ -190,28 +260,29 @@ view(Jrab)
 #Extract day of yr (out of 365):
 Jrab$DayOfYr <- lubridate::yday(Jrab$Date)
 
+# 
+# #remove all rows with a missing value in any column:  -----------
+# view(Jrab)
+# 
+# row.has.na <- apply(Jrab, 1, function(x){any(is.na(x))})
+# sum(row.has.na)
+# Jrab.filtered <- Jrab[!row.has.na,]
+# 
+# Jrab<-Jrab.filtered
+# head(Jrab); dim(Jrab)
 
-#remove all rows with a missing value in any column:  -----------
-view(Jrab)
-
-row.has.na <- apply(Jrab, 1, function(x){any(is.na(x))})
-sum(row.has.na)
-Jrab.filtered <- Jrab[!row.has.na,]
-
-Jrab<-Jrab.filtered
-
-
-
-
+#### calculate sampling effort for each month #######
+head( Jrab )
+head( Jsite )
 
 # Saving Data: ------------------------------------------------------------
 
 ## Save csv's:   -----------
 
 # Save cleaned csv:
-write.csv( x = Arab, file = "Arab" )
-write.csv( x = Jrab, file = "Jrab" )
-
+write.csv( x = Arab, file = paste0(datapath, "Aug22/Arab.csv" ) )
+write.csv( x = Jrab, file = paste0(datapath, "June22/Jrab.csv" ) )
+write.csv( x = JRoutes, file = paste0(datapath, "June22/Jroutes.csv" ) )
 
 
 
@@ -220,23 +291,4 @@ write.csv( x = Jrab, file = "Jrab" )
 save.image("Opt_RabLoc")
 
 
-
-
-# loading the work space:   -----------
-
-load("Opt_RabLoc.RData")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+########################### end of script ####################################

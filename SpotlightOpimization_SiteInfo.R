@@ -145,11 +145,8 @@ A_Rab<-read.csv(paste0(datapath, "Aug22/BTJR.obs_AUG_Clean.csv"))
 
 ## Importing June22 Survey Data:  -----------
 J_Site<-read.csv(paste0(datapath, "June22/SiteInfo.csv"))
-J_Rab<-read.csv(paste0(datapath, "June22/Rab.Loc_Simplified.Edit.csv"))
-
-
-
-
+J_Rab <- read.csv( file = paste0(datapath, "June22/Rab.Loc_Simplified.Edit.csv"),
+                   strip.white = TRUE )
 
 # Cleaning June22 Data:  --------------------------------------------------
 
@@ -172,8 +169,8 @@ J_df.Site<- J_Site %>%
 
 
 ## Removing NAs from start temp and wind :  -----------
-J_df.Site$Start_temp.F.[6]<-"74";J_df.Site$Start_temp.F.
-J_df.Site$Start_wind.km.h.[6]<-11.0;J_df.Site$Start_wind.km.h.
+(J_df.Site$Start_temp.F.[6]<-"74")
+(J_df.Site$Start_wind.km.h.[6]<-11.0)
 
 
 ## Cleaning date format in df:  -----------
@@ -208,13 +205,13 @@ J_df.Site$DayofYr <- lubridate::yday(J_df.Site$Date)
 
 
 
-# Creating a Route ID column (N or S routes):  ----------- 
+# # Creating a Route ID column (N or S routes):  ----------- 
 J_df.Site$RouteID <- NA
 
 for (r in 1:dim(J_df.Site)[1]){
   J_df.Site$RouteID <- ifelse(J_df.Site$Site == "Bigfoot_butte" |
                                 J_df.Site$Site == "Simco" , "S.Route","N.Route")
-  
+
 }
 # | is used as an OR argument in the ifelse statements 
 # you would use & if you wanted an AND argument in the ifelse statement 
@@ -226,8 +223,9 @@ for (r in 1:dim(J_df.Site)[1]){
 
 #June22:
 #Selecting columns of interest:
-J_Rab<- J_Rab %>%
-  dplyr::select(RabID, Crew_name, Night_number,Rab.Obv, Name, Date, lat, lon, RouteID)
+J_Rab <- J_Rab %>%
+  dplyr::select(RabID, Crew_name, Night_number,Rab.Obv, 
+                Name, Date, lat, lon, RouteID )
 
 
 
@@ -240,15 +238,16 @@ J_Rab<- J_Rab %>%
 ## Save csv's:   -----------
 
 # Save cleaned csv:
-write.csv( x = J_df.Site, file = "Site_June22" )
+write.csv( x = J_df.Site, 
+           file = paste0( datapath,"June22/Site_June22.csv" ) )
 
-
+write.csv( J_Rab, paste0( datapath, "June22/Rab.Loc_Simplified.Edit.csv") )
 
 
 
 ## Save work space:   -----------
 # saving all data to the path
-save.image("Opt_Site.RData")
+save.image( "Opt_Site.RData" )
 
 
 
