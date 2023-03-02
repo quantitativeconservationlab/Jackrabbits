@@ -7,7 +7,11 @@
 
 
 
+#######################################################################
+# SCRIPT IN PROGRESS : ----------------------------------------------------
 
+load("Opt_RabLoc")
+#######################################################################
 
 
 
@@ -309,22 +313,27 @@ ARoutes$Duration<-abs(difftime(ARoutes$Start_time,
 # Combining RabLoc and Routes/siteinfo: -----------------------------------
 
 J <- left_join(J_btjr, JRoutes, 
-             by = c("Crew_name", "RouteID"))
-             suffix = 
-             keep = TRUE  
+               by = c("Crew_name", "RouteID", "Night_number")
+               , keep = TRUE)  
 
              
 # Using dplyr - left join on different columns
   J <- J_btjr %>%
-  left_join(JRoutes, 
+    #group_by(Crew_name, RouteID, Night_number) %>%
+  left_join( x=J_btjr, y=JRoutes, 
+              #TRYING TO WORK OUT HOW TO COMBINE THESE WITH OUT ALL THE NAs FROM DATA NOT LINEING UP CORRECTLY 
             by=c('Crew_name'='Crew_name', 
                  'RouteID'='RouteID', 
-                 'Night_number'='Night_number'), keep = TRUE )
+                 'Night_number'='Night_number'), keep = TRUE 
+            #, na_matches = TRUE
+            )
 
 
              
-
-  
+########## CANT FIGURE THIS OUT!!  - SEEMS LIKE SUCH A SIMPLE THING!
+  ########## IDK WHAT I AM DOING WRONG ,,, 
+  ####################################################################
+   ################################################## !!!!!
   
 
 
@@ -336,7 +345,7 @@ J <- left_join(J_btjr, JRoutes,
 #Rab.locations:
 write.csv( x = Arab, file = paste0(datapath, "Aug22/Arab.csv" ) )
 write.csv( x = Jrab, file = paste0(datapath, "June22/Jrab.csv" ) )
-write.csv( x = Arab, file = paste0(datapath, "June22/J_btjr.csv" ) )
+write.csv( x = J_btjr, file = paste0(datapath, "June22/J_btjr.csv" ) )
 #J_btjr = Jrab data filtered for just jackrabs - excluding cottontails or unknowns 
 #Arab = already filtered to only include jackrabs 
 
@@ -350,7 +359,7 @@ write.csv( x = ARoutes, file = paste0(datapath, "Aug22/Aroutes.csv" ) )
 ## Save work space:   -----------
 # saving all data to the path
 save.image("Opt_RabLoc")
-#load("Opt_RabLoc")
+
 
 
 ########################### end of script ####################################
