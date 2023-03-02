@@ -263,9 +263,20 @@ Jrab$DayOfYr <- lubridate::yday(Jrab$Date)
 names(Arab)[names(Arab)=="SurveyNight"] <-'Night_number'
 
 
+#Removing any cottontails from Jrab data:
+unique(Jrab$Name)
+unique(Jrab$Rab.Obv)#Arab: cottontails have already been taken out 
+#remove all cottontails and unknown leporids:
+J_btjr<- Jrab %>%
+  dplyr::filter(Rab.Obv=="Jackrab")
+#check:
+unique(J_btjr$Rab.Obv)#Worked
+#J_btjr now = updated Jrab
 
 
-# Duration Calulations: ---------------------------------------------------
+
+
+# Duration Calculations: ---------------------------------------------------
 
 
 #create an empty column for duration calculation to be put in for each site level df:
@@ -295,10 +306,26 @@ ARoutes$Duration<-abs(difftime(ARoutes$Start_time,
 
 
 
+# Combining RabLoc and Routes/siteinfo: -----------------------------------
+
+J <- left_join(J_btjr, JRoutes, 
+             by = c("Crew_name", "RouteID"))
+             suffix = 
+             keep = TRUE  
+
+             
+# Using dplyr - left join on different columns
+  J <- J_btjr %>%
+  left_join(JRoutes, 
+            by=c('Crew_name'='Crew_name', 
+                 'RouteID'='RouteID', 
+                 'Night_number'='Night_number'), keep = TRUE )
 
 
+             
 
-
+  
+  
 
 
 # Saving Data: ------------------------------------------------------------
@@ -306,8 +333,14 @@ ARoutes$Duration<-abs(difftime(ARoutes$Start_time,
 ## Save csv's:   -----------
 
 # Save cleaned csv:
+#Rab.locations:
 write.csv( x = Arab, file = paste0(datapath, "Aug22/Arab.csv" ) )
 write.csv( x = Jrab, file = paste0(datapath, "June22/Jrab.csv" ) )
+write.csv( x = Arab, file = paste0(datapath, "June22/J_btjr.csv" ) )
+#J_btjr = Jrab data filtered for just jackrabs - excluding cottontails or unknowns 
+#Arab = already filtered to only include jackrabs 
+
+#Site info:
 write.csv( x = JRoutes, file = paste0(datapath, "June22/Jroutes.csv" ) )
 write.csv( x = ARoutes, file = paste0(datapath, "Aug22/Aroutes.csv" ) )
 

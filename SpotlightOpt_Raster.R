@@ -1,11 +1,12 @@
 # Background --------------------------------------------------------------
 # This script in the 3rd of 3 spotlight methodology optimization scripts 
 # This script's purpose:
+#        - Develope spatial objects from the rab loc data to be used in next steps (Spatial analysis)
 #        - combine rabloc to NCA 300m raster 
 #             - configuration of Jrab and Arab csv's to sf objects 
 #        - plot routes 
-#        - calculate duration and sampling efforts 
-#        
+#        - calculate duration and sampling efforts by assigning raster cellID to 
+#           RabLoc data for 2022 spotlight surveys 
 
 
 
@@ -32,12 +33,7 @@ rm( list = ls() )
 #install.packages("oce")
 library(oce)# used for moon phase information
 library( tidyverse ) #package for easy data manipulation
-#install.packages("tidyverse") 
-# library(ggplot2)
-# library(lubridate)
-# library(tidyr)
-# library(dplyr)
- library(sf)
+library(sf)
 library(raster)
 
 
@@ -95,15 +91,7 @@ Jrab <- read.csv(paste0(datapath, "Spotlights/June22/Jrab.csv"))
 #Rab locations for June 2022 spotlight surveys 
 
 str(Jrab)
-#NOTICING MISTAKE : *** SOMEHOW JRAB LAT/LON GOT COL NAMES SWITCHED
-#NEED TO FIX:
-names(Jrab)[names(Jrab)=="lat"] <-'long'
-names(Jrab)[names(Jrab)=="lon"] <-'lat'
 
-View(Jrab)#Worked 
-#now change long to lon to match Arab df:
-names(Jrab)[names(Jrab)=="long"]<-'lon'
-#Worked, ready to proceed 
 
 
 # Manipulating RabLoc to sf Objects: --------------------------------------
@@ -114,16 +102,6 @@ names(Jrab)[names(Jrab)=="long"]<-'lon'
 #June22:  -----------
 #proj <- st_crs('+proj=longlat +datum=WGS84')
 proj <- 4326
-# Jlon <- Jrab$lon
-# Jlat <- Jrab$lat
-# 
-# st_multipoint(cbind(Jlon, Jlat)) %>% st_sfc(., crs = proj)
-# 
-
-# #plot points:
-# plot(st_multipoint(cbind(Jlon, Jlat)) %>% 
-#        st_sfc(., crs = proj))#worked 
-
 
 #Convert a dataframe to a sf object:
 Jrab_sf <- st_as_sf( Jrab, coords = c("lon", "lat"), 
@@ -131,16 +109,6 @@ Jrab_sf <- st_as_sf( Jrab, coords = c("lon", "lat"),
 
 Jrab_sf
 #Manipulating AUG df to include a sf geometry object/col:  -----------
-
-# Alon <- Arab$lon
-# Alat <- Arab$lat
-# st_multipoint(cbind(Alon, Alat)) %>% st_sfc(., crs = proj)
-# 
-# 
-# #plot points:
-# plot(st_multipoint(cbind(Alon, Alat)) %>% 
-#        st_sfc(., crs = proj))#worked 
-# 
 
 #Convert a dataframe to a sf object:
 Arab_sf <- st_as_sf(Arab, coords = c("lon", "lat"), 
