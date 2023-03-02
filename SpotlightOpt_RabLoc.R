@@ -308,30 +308,29 @@ ARoutes$Duration<-abs(difftime(ARoutes$Start_time,
                                ARoutes$End_time, units = "mins"))
 
 
-
+head( ARoutes)
+head( JRoutes)
 
 # Combining RabLoc and Routes/siteinfo: -----------------------------------
+unique( J_btjr$Crew_name ); unique( JRoutes$Crew_name )
 
-J <- left_join(J_btjr, JRoutes, 
-               by = c("Crew_name", "RouteID", "Night_number")
-               , keep = TRUE)  
+J_btjr$Crew_name[ which( J_btjr$Crew_name == "Dusk ")] <- "Dusk"
+J_btjr$Crew_name[ which( J_btjr$Crew_name == "Dawn ")] <- "Dawn"
 
-             
-# Using dplyr - left join on different columns
-  J <- J_btjr %>%
-    #group_by(Crew_name, RouteID, Night_number) %>%
-  left_join( x=J_btjr, y=JRoutes, 
-              #TRYING TO WORK OUT HOW TO COMBINE THESE WITH OUT ALL THE NAs FROM DATA NOT LINEING UP CORRECTLY 
-            by=c('Crew_name'='Crew_name', 
-                 'RouteID'='RouteID', 
-                 'Night_number'='Night_number'), keep = TRUE 
-            #, na_matches = TRUE
-            )
+unique(J_btjr$RouteID ); unique( JRoutes$RouteID )
+
+unique( J_btjr$Night_number ); unique( JRoutes$Night_number )
+
+J <- J_btjr %>% 
+  select( -DayOfYr, -Date, -RabID, -Rab.Obv ) %>% 
+  left_join(., JRoutes, 
+               by = c("Crew_name", "RouteID", "Night_number") )  
+
+head(J);dim( J)
+
+### repeat for August             
 
 
-             
-########## CANT FIGURE THIS OUT!!  - SEEMS LIKE SUCH A SIMPLE THING!
-  ########## IDK WHAT I AM DOING WRONG ,,, 
   ####################################################################
    ################################################## !!!!!
   
