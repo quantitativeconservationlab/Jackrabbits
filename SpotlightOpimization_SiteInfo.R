@@ -21,7 +21,8 @@
 #There are 4 total sites surveyed in August2022. All 4 sites were surveyed each night
 #either by the dawn or dusk crew (road/weather conditions permitting). 
 #Survey crews coordinated to randomize the order,start time, and start locations
-#of each night and site that was surveyed (planning was done before hand @ beginning of season).
+#of each night and site that was surveyed (planning was done before hand @ 
+#beginning of season).
 
 
 
@@ -59,25 +60,6 @@
 
 
 
-
-
-
-#########################################################################################
-
-############# ENTER PSEUDO CODE HERE IN FUTURE ###############################
-########### PULL FROM AugBTJRRoute_DatasheetDataCleaning.R Script ##################
-############ - Put in this first script and not the following 2 ###########
-########### - only put relevant pseudo code / background notes etc. in to that particular script ##########
-
-#########################################################################################
-
-
-
-
-
-
-
-
 # Setup -------------------------------------------------------------------
 
 ## Set up your work space and load relevant packages -----------
@@ -87,18 +69,8 @@ rm( list = ls() )
 
 ## Load packages relevant to this script:  -------------
 
-## Some packages may not been installed - install them if needed
-## Some packagees may not be needed for different parts of this script 
-## Load the packages needed - when needed
-
-
-#install.packages("oce")
-library(oce)# used for moon phase information
 library( tidyverse ) #package for easy data manipulation
-#install.packages("tidyverse") 
-library(ggplot2)
 library(lubridate)
-library(sf)
 
 
 
