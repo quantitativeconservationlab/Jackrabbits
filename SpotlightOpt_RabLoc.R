@@ -293,7 +293,7 @@ JRoutes$Duration<-abs(difftime(JRoutes$Start_time,
 
 
 #alter date/time format before Duration calc.s:
-ARoutes$Start_time <-lubridate::mdy_hm(ARoutes$Start_time)
+ARoutes$Start_time <-lubridate::mdy_hm(ARoutes$Start_time)#############WHERE DOES aROUTES TIME STAMP BECOME WRONG ?? HERE??
 
 ARoutes$Start_time <- with_tz (lubridate::ymd_hms( ARoutes$Start_time),
                                tzone= "US/Mountain" )
@@ -312,23 +312,41 @@ head( ARoutes)
 head( JRoutes)
 
 # Combining RabLoc and Routes/siteinfo: -----------------------------------
-unique( J_btjr$Crew_name ); unique( JRoutes$Crew_name )
 
+#checking that the variables we are going to join the dfs together with are in 
+# the same format as each other :
+unique( J_btjr$Crew_name ); unique( JRoutes$Crew_name )
+#There is a space after some of the dawn and dusk entries 
+
+#Fix:
 J_btjr$Crew_name[ which( J_btjr$Crew_name == "Dusk ")] <- "Dusk"
 J_btjr$Crew_name[ which( J_btjr$Crew_name == "Dawn ")] <- "Dawn"
 
-unique(J_btjr$RouteID ); unique( JRoutes$RouteID )
+#checking the 2 other(group by) variables match each other in both dfs:
+unique(J_btjr$RouteID ); unique( JRoutes$RouteID )#same, good to go
 
-unique( J_btjr$Night_number ); unique( JRoutes$Night_number )
+unique( J_btjr$Night_number ); unique( JRoutes$Night_number )#same, good to go
 
+
+# Joining rablocations and site level info together: 
+#june:
 J <- J_btjr %>% 
   select( -DayOfYr, -Date, -RabID, -Rab.Obv ) %>% 
   left_join(., JRoutes, 
                by = c("Crew_name", "RouteID", "Night_number") )  
 
-head(J);dim( J)
+head(J);dim( J)# worked!
 
-### repeat for August             
+#Repeat for August:
+#Check variables match:
+unique(Arab$)
+
+A <-  %>% 
+  select( -DayOfYr, -Hour, -Date, -RabID, -Rab.Obv, -geometry ) %>% 
+  left_join(., JRoutes, 
+            by = c("Crew_name", "RouteID", "Night_number") )  
+
+head(J);dim( J)# worked!
 
 
   ####################################################################
