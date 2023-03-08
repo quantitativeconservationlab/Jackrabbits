@@ -132,26 +132,13 @@ ADawn<- read.csv( file = paste0(datapath, "Aug22/GPS.clip_allRoutes22.csv"),    
                   header = TRUE )
 
 ##############################################################################
-## There is some overlapping GPS pts in these data set !
+## I think there is some overlapping GPS pts in these data set !
 ## Something is wrong here!
 ## I think this over lap is from the first 2 days where we ran surveys as a four 
 ## person crew and the techs practiced using the GPS's together 
 ##
 ##  NEED JC HELP TO FIGURE OUT WHICH GPS POINTS R OVERLAPPING !!!
 ## These are the GPS points pulled directly from Basecamp 
-
-#TRIED:
-# Removing duplicate rows in August original data dfs ---------------------
-
-#remove duplicate rows across entire data frame
-#ACotton<-ACotton[!duplicated(ACotton[c('time')]), ]
-
-## This deleates all Dusk obvs. !!!!!!!!
-
-#remove duplicate rows across entire data frame
-#AJrab<-AJrab[!duplicated(AJrab[c('time')]), ]
-
-## This deleates all Dusk obvs. 
 
 #####################################################################
 
@@ -212,12 +199,10 @@ AUG22$DayOfYr <- lubridate::yday(AUG22$MST.time)
 AUG22$Hour <- lubridate::hour(AUG22$MST.time)#create new Hour column
 
 #remove dates that do not fall with in Aug1-12, 2022 (Survey period):
-
 AUG22<-AUG22 %>% dplyr::filter(DayOfYr > 213 )
 #Worked
 
-#Can creat Night_number by assigning this df to be called Arab below in code 
-# or change it here to replace Arab 
+#Can create Night_number by assigning this df to be called Arab below in code 
 
 
 #####################################################################
@@ -250,9 +235,10 @@ dplyr:::filter.data.frame( AUG22, DayOfYr == 216)
 ADusk<- ADusk %>%
   dplyr::select(lat, lon, ele, time, name, CreationTime )
 #Worked
+head(ADusk)
 
 #Creating Crew_name Column:
-ADusk<- ADawn %>%
+ADusk<- ADusk %>%
   mutate(Crew_name = "Dusk")
 
 #converting time stamp from UTC to MST:  -----------
@@ -270,7 +256,7 @@ ADusk$Hour <- lubridate::hour(ADusk$MST.time)#create new Hour column
 ADusk<-ADusk %>% dplyr::filter(DayOfYr > 212 )
 #check:
 hist(ADusk$DayOfYr)# all dates fall between survey period
-
+hist(ADusk$Hour)
 
 ## Repeate for Aug22 Dawn:
 #remove this column from other Aug22df -Dusk:
@@ -437,6 +423,9 @@ Jsite$EndDate<-c("2022-06-06","2022-06-07","2022-06-07",
 
 # Manipulating RabLoc Data: -----------------------------------------------
 
+## Renaming AUG22 as Arab for cohesion:  -----------
+Arab<-AUG22
+
 #creating Survey Night column in jackrabbit df:  -----------
 #creating for loop to assign survey night: 
 #First create an empty column to be filled:
@@ -487,7 +476,7 @@ View(Arab); str(Arab)
 head(Jrab)
 # --> Noticing that Jrab is lacking:
 #     - Hour, MST.time 
-#     - DayOfYr, geometry (will add these cols. in raster script )
+#     - DayOfYr,(will add these cols. in raster script )
 #
 # Because June we used the tablets we are missing the exact time of night that 
 # each gps points were taken --> so we Have to (at this time) configure hour and 
@@ -655,9 +644,6 @@ Jtot<-Reduce(function(x, y) merge(x, y, all=TRUE), Jdf_list)
 unique(Jtot$Crew_name)
 
 
-
-
-
 #filter out Cottontails: 
 JCotton<- Jtot %>%
   filter( Rab.Obv == "Cottontail")
@@ -739,12 +725,12 @@ head(J);dim( J)# worked!
 #Check variables match:
 unique(Arab$)
 
-A <-  %>% 
-  select( -DayOfYr, -Hour, -Date, -RabID, -Rab.Obv, -geometry ) %>% 
-  left_join(., JRoutes, 
+A <-  Arab %>% 
+  select( -DayOfYr, -Hour, -Date, -RabID, -Rab.Obv ) %>% 
+  left_join(., ARoutes, 
             by = c("Crew_name", "RouteID", "Night_number") )  
 
-head(J);dim( J)# worked!
+head(A);dim(A )
 
 
   ####################################################################
