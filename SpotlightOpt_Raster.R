@@ -31,7 +31,6 @@ rm( list = ls() )
 
 
 #install.packages("oce")
-library(oce)# used for moon phase information
 library( tidyverse ) #package for easy data manipulation
 library(sf)
 library(raster)
@@ -77,14 +76,14 @@ rastpath<-"Z:/Common/QCLData/Habitat/NLCD_new/NCA_raster_summaries_300m/"
 
 # August22:
 
-Asite <- read.csv(paste0(datapath, "Spotlights/Aug22/BigRabdf_extended.csv"))
+Asite <- read.csv(paste0(datapath, "Spotlights/Aug22/ARoute.csv"))
 #site level info for August 2022 spotlight surveys 
 Arab <- read.csv(paste0(datapath, "Spotlights/Aug22/Arab.csv"))
 #Rab locations for August 2022 spotlight surveys 
   
 # June22:
 
-Jsite<-read.csv(paste0(datapath, "Spotlights/June22/Site_June22.csv"))
+Jsite<-read.csv(paste0(datapath, "Spotlights/June22/JRoutes.csv"))
 #site level info for June 2022 spotlight surveys 
 
 Jrab <- read.csv(paste0(datapath, "Spotlights/June22/Jrab.csv"))
