@@ -124,6 +124,7 @@ ADusk<- read.csv( file = paste0(datapath, "Aug22/GPS2_allRoutes22.csv"),
                   na.strings = c(""," ","NA"), 
                   # includes column heading
                   header = TRUE )
+head(ADusk)
 #GPS1:
 ADawn<- read.csv( file = paste0(datapath, "Aug22/GPS.clip_allRoutes22.csv"),                  #"Aug22/SpotlightBTJR_Aug22_Dusk.csv"), 
                   #replaces those values with NA
@@ -201,7 +202,7 @@ AUG22<- AUG22 %>%
 #Worked
 
 #converting time stamp from UTC to MST:  -----------
-AUG22$MST.time <- with_tz (lubridate::ymd_hms( AUG22$time),
+AUG22$MST.time <- with_tz(lubridate::ymd_hms( AUG22$time),
                            tzone= "US/Mountain" )
 
 
@@ -238,7 +239,7 @@ AUG22 %>%
   #unique()#31
   #summarise(n_distinct(MST.time))#31
   
-  dplyr:::filter.data.frame( AUG22, DayOfYr == 216)#31
+dplyr:::filter.data.frame( AUG22, DayOfYr == 216)#31
 dplyr:::filter.data.frame( AUG22, DayOfYr == 216)
 
 
@@ -247,12 +248,12 @@ dplyr:::filter.data.frame( AUG22, DayOfYr == 216)
 
 #remove this column from other Aug22df -Dusk:
 #Filter out empty columns from df
-ADusk<- ADusk %>%
+ADusk <- ADusk %>%
   dplyr::select(lat, lon, ele, time, name, CreationTime )
 #Worked
-
+head( ADusk )
 #Creating Crew_name Column:
-ADusk<- ADawn %>%
+ADusk <- ADusk %>%
   mutate(Crew_name = "Dusk")
 
 #converting time stamp from UTC to MST:  -----------
@@ -267,20 +268,20 @@ ADusk$Hour <- lubridate::hour(ADusk$MST.time)#create new Hour column
 
 #remove dates that do not fall with in Aug1-12, 2022 (Survey period):
 
-ADusk<-ADusk %>% dplyr::filter(DayOfYr > 212 )
+ADusk <- ADusk %>% dplyr::filter(DayOfYr > 212 )
 #check:
 hist(ADusk$DayOfYr)# all dates fall between survey period
 
-
+head(ADusk )
 ## Repeate for Aug22 Dawn:
 #remove this column from other Aug22df -Dusk:
 #Filter out empty columns from df
-ADawn<- ADawn %>%
+ADawn <- ADawn %>%
   dplyr::select(lat, lon, ele, time, name, CreationTime )
 #Worked
 
 #Creating Crew_name Column:
-ADawn<- ADawn %>%
+ADawn <- ADawn %>%
   mutate(Crew_name = "Dawn")
 
 #converting time stamp from UTC to MST:  -----------
@@ -295,7 +296,7 @@ ADawn$Hour <- lubridate::hour(ADawn$MST.time)#create new Hour column
 
 #remove dates that do not fall with in Aug1-12, 2022 (Survey period):
 
-ADawn<-ADawn %>% dplyr::filter(DayOfYr > 212 )
+ADawn <- ADawn %>% dplyr::filter(DayOfYr > 212 )
 #check:
 hist(ADawn$DayOfYr)# all dates fall between survey period
 hist(ADawn$Hour)
@@ -439,6 +440,7 @@ Jsite$EndDate<-c("2022-06-06","2022-06-07","2022-06-07",
 
 #creating Survey Night column in jackrabbit df:  -----------
 #creating for loop to assign survey night: 
+Arab <- AUG22
 #First create an empty column to be filled:
 Arab$Night_number<-NA
 
@@ -610,59 +612,63 @@ Jrab$DayOfYr <- lubridate::yday(Jrab$Date)
 unique(Jrab$Name)
 unique(Jrab$Rab.Obv)#Arab: cottontails have already been taken out 
 #remove all cottontails and unknown leporids:
-J_btjr<- Jrab %>%
+J_btjr <- Jrab %>%
   dplyr::filter(Rab.Obv=="Jackrab")
 #check:
 unique(J_btjr$Rab.Obv)#Worked
 #J_btjr now = updated Jrab
 
 
-
-
-
 #Removing any cottontails from A/J Dusk/Dawn original data:
 unique(ADawn$Rab.Obv)
 
 #Combining ADawn and ADusk :
-
-#put all data frames into list
-Adf_list <- list(ADusk, ADawn)
-
-#merge all data frames in list
-Atot<-Reduce(function(x, y) merge(x, y, all=TRUE), Adf_list)
-unique(Atot$Crew_name)
-
+head(ADusk)
+head(ADawn)
+#join both dataframes 
+Atot <- bind_rows( ADawn, ADusk )
+head(Atot)
+dim( Atot); dim( ADusk); dim(ADawn)
+unique( Atot$name )
+#extract rows belonging to jackrabbits
+jids <- grep("^J", Atot$name, ignore.case = TRUE,value = FALSE )
+#make column for rab.obv naming all cottontail
+Atot$Rab.Obv <- "Cottontail"
+#replace those in jids with jackrab
+Atot$Rab.Obv[ jids ] <- "Jackrab"
+#check
+tail(Atot)
 #filter out Cottontails: 
-ACotton<- Atot %>%
+ACotton <- Atot %>%
   filter( Rab.Obv == "Cottontail")
 #filter out Jackrabbits:
-AJrab<-Atot %>%
+AJrab <- Atot %>%
   filter( Rab.Obv == "Jackrab")
 
 unique(AJrab$Crew_name)
 
 
+head( AJrab )
+
+# check if there are any duplicates
+AJrab %>% 
+  select( lat, lon, ele, MST.time ) %>% 
+duplicated() %>% sum()
 
 ###########################################################################
 
-#Combining JDawn and JDusk :
+#Combining JDawn and JDusk:
+head( JDawn);head(JDusk)
+Jtot <- bind_rows( JDawn, JDusk )
 
-#put all data frames into list
-Jdf_list <- list(JDusk, JDawn)
-
-#merge all data frames in list
-Jtot<-Reduce(function(x, y) merge(x, y, all=TRUE), Jdf_list)
-unique(Jtot$Crew_name)
-
-
-
-
-
+#check 
+unique( Jtot$Rab.Obv )
+Jtot[is.na( Jtot$Rab.Obv), ]
 #filter out Cottontails: 
-JCotton<- Jtot %>%
+JCotton <- Jtot %>%
   filter( Rab.Obv == "Cottontail")
 #filter out Jackrabbits:
-JJrab<-Jtot %>%
+JJrab <- Jtot %>%
   filter( Rab.Obv == "Jackrab")
 
 unique(JJrab$Crew_name)
@@ -670,13 +676,10 @@ unique(JJrab$Crew_name)
 #there is a space in "dusk " crew name somewhere
 #Fix:
 JJrab$Crew_name[ which( JJrab$Crew_name == "Dusk ")] <- "Dusk"
+
+
+
 #####################################################################3
-
-
-
-
-
-
 
 
 
