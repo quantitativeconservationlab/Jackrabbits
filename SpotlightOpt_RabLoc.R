@@ -85,6 +85,7 @@ workdir <- getwd()
 datapath <- "Z:/Common/Jackrabbits/Data/Spotlights/" 
 
 
+
 #Calling Rab Loc data:  -----------
 #Call in the desired csv's needed for next steps:
 
@@ -116,14 +117,15 @@ Jrab <- read.csv( file = paste0(datapath, "June22/Rab.Loc_Simplified.Edit.csv"),
 
 
 #Aug22:  -----------
-#Original Data:
-ADawn<- read.csv( file = paste0(datapath, "Aug22/SpotlightBTJR_Aug22_Dawn.csv"), 
+#Individual GPS Data/original data:
+#GPS2:
+ADusk<- read.csv( file = paste0(datapath, "Aug22/GPS2_allRoutes22.csv"), 
                   #replaces those values with NA
                   na.strings = c(""," ","NA"), 
                   # includes column heading
                   header = TRUE )
-
-ADusk<- read.csv( file = paste0(datapath, "Aug22/SpotlightBTJR_Aug22_Dusk.csv"), 
+#GPS1:
+ADawn<- read.csv( file = paste0(datapath, "Aug22/GPS.clip_allRoutes22.csv"),                  #"Aug22/SpotlightBTJR_Aug22_Dusk.csv"), 
                   #replaces those values with NA
                   na.strings = c(""," ","NA"), 
                   # includes column heading
@@ -151,15 +153,22 @@ ADusk<- read.csv( file = paste0(datapath, "Aug22/SpotlightBTJR_Aug22_Dusk.csv"),
 
 ## This deleates all Dusk obvs. 
 
+#####################################################################
+
 
 ##############################################################################
 
-#Altered data:
-Arab <- read.csv( paste0( datapath, "Aug22/BTJR.obs_AUG_Clean.csv") , 
+#Calling Rab Loc data:  -----------
+
+#Aug22:  -----------
+#Original Data (both gps combined all rab spp.) :
+AUG22<- read.csv( file = paste0(datapath, "Aug22/RabLoc_labBaseCamp.csv"), 
                   #replaces those values with NA
                   na.strings = c(""," ","NA"), 
                   # includes column heading
                   header = TRUE )
+
+
 
 
 
@@ -183,39 +192,124 @@ Jsite <- read.csv(paste0(datapath, "June22/Site_June22.csv") ,
 # Inspecting & Formatting data: ------------------------------------------------
 
 # Aug 2022 RabLoc data:  -----------
-view(ADawn);str(ADawn)#missing Crew_name
-#fix:
+view(AUG22);str(AUG22)
+head(AUG22)
+
+#Filter out empty columns from df
+AUG22<- AUG22 %>%
+  dplyr::select(lat, lon, ele, time, name, CreationTime )
+#Worked
+
+#converting time stamp from UTC to MST:  -----------
+AUG22$MST.time <- with_tz (lubridate::ymd_hms( AUG22$time),
+                           tzone= "US/Mountain" )
+
+
+#create yday column:
+AUG22$DayOfYr <- lubridate::yday(AUG22$MST.time)
+
+#Extract hour of night:
+AUG22$Hour <- lubridate::hour(AUG22$MST.time)#create new Hour column
+
+#remove dates that do not fall with in Aug1-12, 2022 (Survey period):
+
+AUG22<-AUG22 %>% dplyr::filter(DayOfYr > 213 )
+#Worked
+
+#Can creat Night_number by assigning this df to be called Arab below in code 
+# or change it here to replace Arab 
+
+
+#####################################################################
+
+##############################################################
+# INVESTIGATION: AUG22 GPS PT. PROBLEMS : Overlapping MST.time - which are unique?
+# - is there repeated gps points in aug gps data?
+# - Need help figureing this out before can join aug rabloc and Aroutes
+
+AUG22 %>%
+  summarise(n_distinct(MST.time))#CreationTime : 957
+unique(AUG22$MST.time)
+
+AUG22 %>% dplyr::filter(DayOfYr == 213 ) #0
+AUG22 %>% 
+  #group_by(Hour) %>%
+  filter(DayOfYr == 214 ) %>% #31
+  #unique()#31
+  #summarise(n_distinct(MST.time))#31
+  
+  dplyr:::filter.data.frame( AUG22, DayOfYr == 216)#31
+dplyr:::filter.data.frame( AUG22, DayOfYr == 216)
+
+
+####################################################################
+
+
+#remove this column from other Aug22df -Dusk:
+#Filter out empty columns from df
+ADusk<- ADusk %>%
+  dplyr::select(lat, lon, ele, time, name, CreationTime )
+#Worked
+
+#Creating Crew_name Column:
+ADusk<- ADawn %>%
+  mutate(Crew_name = "Dusk")
+
+#converting time stamp from UTC to MST:  -----------
+ADusk$MST.time <- with_tz (lubridate::ymd_hms( ADusk$time),
+                           tzone= "US/Mountain" )
+
+#create yday column:
+ADusk$DayOfYr <- lubridate::yday(ADusk$MST.time)
+
+#Extract hour of night:
+ADusk$Hour <- lubridate::hour(ADusk$MST.time)#create new Hour column
+
+#remove dates that do not fall with in Aug1-12, 2022 (Survey period):
+
+ADusk<-ADusk %>% dplyr::filter(DayOfYr > 212 )
+#check:
+hist(ADusk$DayOfYr)# all dates fall between survey period
+
+
+## Repeate for Aug22 Dawn:
+#remove this column from other Aug22df -Dusk:
+#Filter out empty columns from df
+ADawn<- ADawn %>%
+  dplyr::select(lat, lon, ele, time, name, CreationTime )
+#Worked
+
 #Creating Crew_name Column:
 ADawn<- ADawn %>%
   mutate(Crew_name = "Dawn")
 
+#converting time stamp from UTC to MST:  -----------
+ADawn$MST.time <- with_tz (lubridate::ymd_hms( ADawn$time),
+                           tzone= "US/Mountain" )
+
+#create yday column:
+ADawn$DayOfYr <- lubridate::yday(ADawn$MST.time)
+
+#Extract hour of night:
+ADawn$Hour <- lubridate::hour(ADawn$MST.time)#create new Hour column
+
+#remove dates that do not fall with in Aug1-12, 2022 (Survey period):
+
+ADawn<-ADawn %>% dplyr::filter(DayOfYr > 212 )
 #check:
-view(ADawn);str(ADawn)
-head(ADawn);tail(ADawn)
-view(ADusk);str(ADusk)#matches ADawn
-
-#Remove unneeded columns:
-ADawn <- ADawn %>%  dplyr::select( -wptID ) 
-#check:
-view(ADawn);str(ADawn)#removed correctly
-
-#remove this column from other Aug22df -Dusk:
-#Remove unneeded columns:
-ADusk <- ADusk %>%  dplyr::select( -wptID ) 
-view(ADusk);str(ADusk)#removed correctly
+hist(ADawn$DayOfYr)# all dates fall between survey period
+hist(ADawn$Hour)
 
 
-view(Arab);str(Arab)
-# --> noticing that the geometry column has been split into 2 columns 
-#   - will need to join these together so it can be read by sf package/spatial
-# or remove these columns and just leave lat and lon 
 
-#Fixing geometry col. in Aug rabloc data:  -----------
-Arab$geometry<- paste(Arab$geometry, Arab$X, sep = ",")#worked
-view(Arab);str(Arab)
-#Remove unneeded columns:
-Arab <- Arab %>%  dplyr::select( -X ) 
-view(ADusk);str(ADusk)#removed correctly
+
+
+
+
+
+
+
+
 
 
 
@@ -374,11 +468,11 @@ for (r in 1:dim(Arab)[1]){
 #checking worked correctly:
 View(Arab); str(Arab)
 #Arab missing RouteID 
-#Will be pulling from Aug22 Original data to try and fix this problem:
+#Will be trying to pull from Aug22 Original/individual gps data to try and fix this problem:
 ####################################################################################
 # may run in to difficulties here because the ADusk and ADawn have overlapping data 
 ####################################################################################
-
+# tried to address this issue above but need some help 
 
 
 
@@ -445,7 +539,7 @@ Jsite <- Jsite %>%  arrange( Night_number ) %>%
                    as.character( last(Route_end) + minutes(30) ) ) )  )
 
 #check
-head(Jsite)#Worked, ready to proceed 
+view(Jsite);head(Jsite)#Worked, ready to proceed 
 
 
 #Now I create a routebased dataframe for June that only contains the relevant 
@@ -463,7 +557,7 @@ JRoutes <- Jsite %>%
           EndYday = last(DayofYr) ) 
 
 #check 
-JRoutes
+view(JRoutes);head(JRoutes)
 
 #Now I create a routebased dataframe for august that only contains the relevant 
 # columns that we need at the site level 
@@ -481,13 +575,14 @@ ARoutes <- Asite %>%
 
 
 #check 
-ARoutes
+view(ARoutes);head(ARoutes)
 
 
-#RabLoc data altering:
+
+# #RabLoc data altering: --------------------------------------------------
 
 #Now add end and start times to Jrab
-tail(Jrab);dim(Jrab)
+tail(Jrab);dim(Jrab)#need to get rid of empty rows after data
 #check data
 unique(Jrab$RouteID)#"S.Route" "N.Route" NA
 
