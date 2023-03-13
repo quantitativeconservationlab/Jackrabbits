@@ -9,23 +9,7 @@
 #                 2. Crew_name, 
 #                 3. RouteID, 
 #                 4. Night_number
-# 
 
-
-
-
-#######################################################################
-# SCRIPT IN PROGRESS : ----------------------------------------------------
-
-# FININSH CREATING JOINED/COMBINED DF FOR AUG LIKE J DF
-# REFERENCE AUDIO CLIP FROM Mar.2 MEETING FOR NEXT STEP TO DO 
-# 
-
-#######################################################################
-# SCRIPT IN PROGRESS : ----------------------------------------------------
-
-#load("Opt_RabLoc")
-#######################################################################
 
 
 
@@ -360,7 +344,7 @@ unique( JJrab$Night_number ); unique( JRoutes$Night_number )#same, good to go
 # Joining rablocations and site level info together: 
 #june:
 J <- JJrab %>% 
-  select( -DayOfYr, -Date, -RabID, -Rab.Obv ) %>% 
+  #select( -DayOfYr, -Date, -RabID, -Rab.Obv ) %>% 
   left_join(., JRoutes, 
             by = c("Crew_name", "RouteID", "Night_number") )  
 
@@ -377,12 +361,7 @@ head(J);dim( J)#
 
 
 
-
-
-
-
-
-
+# Aug22 data: -------------------------------------------------------------
 
 
 
@@ -412,13 +391,10 @@ ADusk$Hour <- lubridate::hour(ADusk$MST.time)#create new Hour column
 ADusk <- ADusk %>% dplyr::filter(DayOfYr > 212 )
 #check:
 hist(ADusk$DayOfYr)# all dates fall between survey period
-<<<<<<< HEAD
 hist(ADusk$Hour)
 
-=======
 
 head(ADusk )
->>>>>>> a3c83dcbcca38d37be702c30bf95f1f5680a140e
 ## Repeate for Aug22 Dawn:
 #remove this column from other Aug22df -Dusk:
 #Filter out empty columns from df
@@ -448,74 +424,49 @@ hist(ADawn$DayOfYr)# all dates fall between survey period
 hist(ADawn$Hour)
 
 
-
-
-
 # Aug 2022 site data:  -----------
 view(Asite); str(Asite)
 unique(Asite$Site)#good to proceed
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Manipulating RabLoc Data: -----------------------------------------------
 
+#Combining ADawn and ADusk :
+head(ADusk)
+head(ADawn)#have matching column names
+#join both dataframes 
+Atot <- bind_rows( ADawn, ADusk )
+head(Atot)
+dim( Atot); dim( ADusk); dim(ADawn)
 
 #creating Survey Night column in jackrabbit df:  -----------
 #creating for loop to assign survey night: 
 #First create an empty column to be filled:
-Arab$Night_number<-NA
+Atot$Night_number<-NA
 
 #Create for loop to assign survey night dependant on yday and hour:
 
-for (r in 1:dim(Arab)[1]){
-  Arab$Night_number <-
-    ifelse(Arab$DayOfYr == "213", "1",
-    ifelse(Arab$DayOfYr == "214" & Arab$Hour < 20, "1",
-    ifelse(Arab$DayOfYr == "214" & Arab$Hour > 20, "2", 
-    ifelse(Arab$DayOfYr == "215" & Arab$Hour < 20, "2",
-    ifelse(Arab$DayOfYr == "215" & Arab$Hour > 20, "3",
-    ifelse(Arab$DayOfYr == "216" & Arab$Hour < 20, "3",
-    ifelse(Arab$DayOfYr == "216" & Arab$Hour > 20, "4", 
-    ifelse(Arab$DayOfYr == "217" & Arab$Hour < 20, "4",
-    ifelse(Arab$DayOfYr == "219" & Arab$Hour > 20, "5",
-    ifelse(Arab$DayOfYr == "220" & Arab$Hour < 20, "5",
-    ifelse(Arab$DayOfYr == "220" & Arab$Hour > 20, "6", 
-    ifelse(Arab$DayOfYr == "221" & Arab$Hour < 20, "6",
-    ifelse(Arab$DayOfYr == "222" & Arab$Hour > 20, "7",
-    ifelse(Arab$DayOfYr == "223" & Arab$Hour < 20, "7",
-    ifelse(Arab$DayOfYr == "223" & Arab$Hour > 20, "8", 
-    ifelse(Arab$DayOfYr == "224" & Arab$Hour < 20, "8",
+for (r in 1:dim(Atot)[1]){
+  Atot$Night_number <-
+    ifelse(Atot$DayOfYr == "213", "1",
+    ifelse(Atot$DayOfYr == "214" & Atot$Hour < 20, "1",
+    ifelse(Atot$DayOfYr == "214" & Atot$Hour > 20, "2", 
+    ifelse(Atot$DayOfYr == "215" & Atot$Hour < 20, "2",
+    ifelse(Atot$DayOfYr == "215" & Atot$Hour > 20, "3",
+    ifelse(Atot$DayOfYr == "216" & Atot$Hour < 20, "3",
+    ifelse(Atot$DayOfYr == "216" & Atot$Hour > 20, "4", 
+    ifelse(Atot$DayOfYr == "217" & Atot$Hour < 20, "4",
+    ifelse(Atot$DayOfYr == "219" & Atot$Hour > 20, "5",
+    ifelse(Atot$DayOfYr == "220" & Atot$Hour < 20, "5",
+    ifelse(Atot$DayOfYr == "220" & Atot$Hour > 20, "6", 
+    ifelse(Atot$DayOfYr == "221" & Atot$Hour < 20, "6",
+    ifelse(Atot$DayOfYr == "222" & Atot$Hour > 20, "7",
+    ifelse(Atot$DayOfYr == "223" & Atot$Hour < 20, "7",
+    ifelse(Atot$DayOfYr == "223" & Atot$Hour > 20, "8", 
+    ifelse(Atot$DayOfYr == "224" & Atot$Hour < 20, "8",
     "NA"))))))))))))))))
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #Now I create a routebased dataframe for august that only contains the relevant 
@@ -539,20 +490,11 @@ view(ARoutes);head(ARoutes)
 
 
 
-
-
 # Removing cottontails/creating cottontail df: ----------------------------
 
 #Removing any cottontails from A/J Dusk/Dawn original data:
-unique(ADawn$Rab.Obv)
 
-#Combining ADawn and ADusk :
-head(ADusk)
-head(ADawn)
-#join both dataframes 
-Atot <- bind_rows( ADawn, ADusk )
-head(Atot)
-dim( Atot); dim( ADusk); dim(ADawn)
+#Seperating cottontails from BTJR dfs :
 unique( Atot$name )
 #extract rows belonging to jackrabbits
 jids <- grep("^J", Atot$name, ignore.case = TRUE,value = FALSE )
@@ -581,9 +523,6 @@ duplicated() %>% sum()
 
 
 
-
-
-
 # Duration Calculations: ---------------------------------------------------
 
 
@@ -603,7 +542,6 @@ ARoutes$Duration<-abs(difftime(ARoutes$Start_time,
 
 
 head( ARoutes)
-head( JRoutes)
 
 
 # Combining RabLoc and Routes/siteinfo: -----------------------------------
@@ -611,19 +549,57 @@ head( JRoutes)
 
 #Repeat for August:
 #Check variables match:
-unique(Arab$)
+head(AJrab);head(ARoutes)
+#checking that the variables we are going to join the dfs together with are in 
+# the same format as each other :
+unique( AJrab$Crew_name ); unique( ARoutes$Crew_name )#same
 
-A <-  Arab %>% 
-  select( -DayOfYr, -Hour, -Date, -RabID, -Rab.Obv ) %>% 
+#checking the 2 other(group by) variables match each other in both dfs:
+unique(AJrab$RouteID ); unique( ARoutes$RouteID )#Ajrab missing RouteID 
+# create RouteID Column for AJrab:
+AJrab$RouteID<-NA
+
+for (r in 1:dim(AJrab)[1]){
+  AJrab$RouteID <-
+    ifelse(AJrab$Crew_name == "Dawn" & AJrab$Night_number == "3", "S.Route",
+    ifelse(AJrab$Crew_name == "Dawn" & AJrab$Night_number == "4", "N.Route",
+    ifelse(AJrab$Crew_name == "Dawn" & AJrab$Night_number == "5", "S.Route",
+    ifelse(AJrab$Crew_name == "Dawn" & AJrab$Night_number == "6", "N.Route", 
+    ifelse(AJrab$Crew_name == "Dawn" & AJrab$Night_number == "7", "S.Route",
+    ifelse(AJrab$Crew_name == "Dawn" & AJrab$Night_number == "8", "N.Route",
+    ifelse(AJrab$Crew_name == "Dusk" & AJrab$Night_number == "3", "N.Route",
+    ifelse(AJrab$Crew_name == "Dusk" & AJrab$Night_number == "4", "S.Route",
+    ifelse(AJrab$Crew_name == "Dusk" & AJrab$Night_number == "5", "N.Route",
+    ifelse(AJrab$Crew_name == "Dusk" & AJrab$Night_number == "6", "S.Route", 
+    ifelse(AJrab$Crew_name == "Dusk" & AJrab$Night_number == "8", "S.Route",
+    "NA"))))))))))) 
+} 
+                  
+#Check:
+head(AJrab)
+tail(AJrab)
+           
+unique( AJrab$Night_number ); unique( ARoutes$Night_number )
+#Ajrab night number needs to be altered from character to integer
+#as.integer(AJrab)
+#Error: 'list' object cannot be coerced to type 'integer'
+ARoutes$Night_number <- as.character(ARoutes$Night_number)
+unique( AJrab$Night_number ); unique( ARoutes$Night_number )
+
+
+
+
+#combining august site an rabbit location dfs:
+
+A <-  AJrab %>% 
+  #select( -DayOfYr, -Hour, -Date, -RabID, -Rab.Obv ) %>% 
   left_join(., ARoutes, 
             by = c("Crew_name", "RouteID", "Night_number") )  
 
 head(A);dim(A )
 
 
-  ####################################################################
-   ################################################## !!!!!
-  
+
 
 
 # Saving Data: ------------------------------------------------------------
@@ -632,23 +608,23 @@ head(A);dim(A )
 
 # Save cleaned csv:
 #Rab.locations:
-write.csv( x = Arab, file = paste0(datapath, "Aug22/Arab.csv" ) )
-write.csv( x = Jrab, file = paste0(datapath, "June22/Jrab.csv" ) )
-write.csv( x = J_btjr, file = paste0(datapath, "June22/J_btjr.csv" ) )
-#J_btjr = Jrab data filtered for just jackrabs - excluding cottontails or unknowns 
-#Arab = already filtered to only include jackrabs 
+write.csv( x = AJrab, file = paste0(datapath, "Aug22/AJrab.csv" ) )
+write.csv( x = JJrab, file = paste0(datapath, "June22/JJrab.csv" ) )
+
 
 #Site info:
 write.csv( x = JRoutes, file = paste0(datapath, "June22/Jroutes.csv" ) )
 write.csv( x = ARoutes, file = paste0(datapath, "Aug22/Aroutes.csv" ) )
 
-
+#Rabloc & Site combined info:
+write.csv( x = A, file = paste0(datapath, "Aug22/AJrabRoutes.csv" ) )
+write.csv( x = J, file = paste0(datapath, "June22/JJrabRoutes.csv" ) )
 
 
 ## Save work space:   -----------
 # saving all data to the path
 save.image("Opt_RabLoc")
 
-
+#load("Opt_RabLoc")
 
 ########################### end of script ####################################
