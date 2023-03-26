@@ -12,6 +12,33 @@
 
 
 
+##########################################################################
+
+# IN PROGRESS:
+
+# Need to alter august Aroute df 
+#   - split up day 1 & 2 so that it is not just the whole time the spotlights 
+#     were on the whole night 
+#          - just manually alter the times for the 2 lines per crew per night 
+#             to be individual not as a whole per night 
+#         
+#         - need to go back thru datasheets from aug to find these times 
+#           (route start time individually)
+
+# 
+# June df check :
+#     - remove night were dawn crew did n and s route sites combined (dawn day 7)
+#     - make note in script about dawn night 7 - needs to be replaced with an NA
+#       & then filter out dawn night 7 moving forward becasue they were mixed n and s route
+#       due to dusk crew getting stuck in mud and dawn taking over comb.hab and bigfoot sites 
+
+
+
+
+
+##########################################################################
+
+
 
 
 
