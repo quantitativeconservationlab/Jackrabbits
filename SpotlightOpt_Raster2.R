@@ -190,6 +190,47 @@ plot(st_geometry(Sroute_rast), add=TRUE, col="blue")
 
 
 #transect each poly.with a grid cell :  -----------
+st_intersection(rast_template, Nroute_rast)
+#cant use on raster 
+############################################################################
+terra:: extract(x = rast_template, y = Nroute_rast)
+#HELP NOTES::
+# Extract values from a SpatRaster for a set of locations. 
+#The locations can be a SpatVector (points, lines, polygons), 
+#a matrix with (x, y) or (longitude, latitude – in that order!) 
+#coordinates, or a vector with cell numbers.
+# 
+# When argument y is a SpatVector, and list=FALSE, the first column has the ID 
+#(record number) of the SpatVector used.
+
+# S4 method for signature 'SpatRaster,SpatVector'
+# extract(x, y, fun=NULL, method="simple", list=FALSE, factors=TRUE, 
+#         cells=FALSE, xy=FALSE, weights=FALSE, exact=FALSE,
+#         touches=is.lines(y), layer=NULL, ...)
+
+
+
+
+
+
+#creating Objects of class SpatVector.:
+
+Nroute_rast<-terra::vect(Nroute_rast)
+#check:
+class(Nroute_rast)
+#spatvector 
+
+
+#try again 
+terra:: extract(x = rast_template, y = Nroute_rast)
+#Error: [extract] raster has no value
+
+terra:: extract(x = NCAgrid300m, y = Nroute_rast)
+#nope
+
+
+#############################################################################
+
 
 
 
@@ -197,6 +238,9 @@ plot(st_geometry(Sroute_rast), add=TRUE, col="blue")
 
 # Analyzing Spatial Data --------------------------------------------------
 
+
+st_area(Nroute_rast)#0 [m^2]
+#Doesnt work 
 
 
 
