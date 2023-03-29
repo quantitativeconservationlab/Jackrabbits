@@ -27,7 +27,6 @@ library( tidyverse ) #package for easy data manipulation
 library(sf) # used for manipulating simple features such as polygons,lines,points etc
 library(raster) #used for manipulation and calling of raster objects 
 library(terra) #also used for raster data 
-library( tidyverse ) #package for easy data manipulation
 # set option to see all columns and more than 10 rows
 options( dplyr.width = Inf, dplyr.print_min = 100 )
 
@@ -99,6 +98,7 @@ summary(Jrabsite)
 
 
 ## June22 spatial data: 
+#June has fewer col. than Aug22 becasue of tablet use = exact time stamps lacking 
 Jrabsite_rast <- st_read(paste0(datapath,
                                 "Spotlights/Spatial.Data/Jrabsite_rast.shp"))
 #importing jrabbit sf objects created in SpotlightOpt_Raster.R
@@ -153,34 +153,43 @@ NCAgrid300m
 # Creating a Blank Raster to Match Original  ------------------------------
 rast_template <- rast(ext(NCAgrid300m),resolution = 300, 
                       crs = st_crs(NCAgrid300m)$wkt)
+#Check:
 plot(rast_template)
 plot(NCAgrid300m)
 
 
-
-
-
+#Making sure teplate raster crs matches with raster NCAgrid300m:
 crs(NCAgrid300m)#+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0+datum=WGS84 +units=m +no_defs
-crs(rast_template) <- "+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0
-+datum=WGS84 +units=m +no_defs"
 
-crs(rast_template)
-####################################################################
-# I AM UNSURE IF THESE ARE MATCHING EACHOTHER OR NOT HERE
-####################################################################
+st_crs(rast_template) == st_crs(NCAgrid300m)
+#TRUE
+
+##Checking Extents :  -----------
+terra::ext(rast_template)
+#SpatExtent : -1660905, -1555905, 2357685, 2459385 (xmin, xmax, ymin, ymax)
+#matches
+
+##Checking Resolutions :  -----------
+res(rast_template)#300 300
+ncol(rast_template)#350
+#matches
 
 
 # Manipulating Blank Raster  ----------------------------------------------
+
 #Plotting Raster and Vector objects together to check :  -----------
 plot(rast_template)
 plot(st_geometry(NCAb_rast), add=TRUE)
-#plot(st_geometry(Arab_rast), add=TRUE, col = "green")
-#plot(st_geometry(Jrab_rast), add=TRUE, col="black")
+#plot(st_geometry(Arabsite_rast), add=TRUE, col = "green")
+#plot(st_geometry(Jrabsite_rast), add=TRUE, col="black")
 
 plot(st_geometry(Nroute_rast), add=TRUE, col="red")
 plot(st_geometry(Sroute_rast), add=TRUE, col="blue")
 
 
+
+
+#transect each poly.with a grid cell :  -----------
 
 
 
@@ -190,6 +199,21 @@ plot(st_geometry(Sroute_rast), add=TRUE, col="blue")
 
 
 
+
+
+
+##############################################################################
+#raster::rasterize		= Rasterize points, lines, or polygons
+
+#terra::rasterize		  = Rasterize vector data
+
+# do we need to rasterize vector data to analyze ? 
+
+
+
+
+
+#############################################################################
 
 
 
