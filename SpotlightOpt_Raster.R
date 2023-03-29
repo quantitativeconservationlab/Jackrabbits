@@ -100,22 +100,23 @@ Jrabsite <- read.csv(paste0(datapath, "Spotlights/June22/JJrabRoutes.csv"))
 
 #June22:  -----------
 #proj <- st_crs('+proj=longlat +datum=WGS84')
-proj <- 4326
+proj <- 4326 #WGS84 code
 
 #Convert a dataframe to a sf object:
-Jrab_sf <- st_as_sf( Jrab, coords = c("lon", "lat"), 
+Jrabsite_sf <- st_as_sf( Jrabsite, coords = c("lon", "lat"), 
                    crs = proj )# now will have a geometry column 
 
-Jrab_sf
+Jrabsite_sf
+plot(Jrabsite_sf)
 #Manipulating AUG df to include a sf geometry object/col:  -----------
 
 #Convert a dataframe to a sf object:
-Arab_sf <- st_as_sf(Arab, coords = c("lon", "lat"), 
+Arabsite_sf <- st_as_sf(Arabsite, coords = c("lon", "lat"), 
                    crs = 4326)# now will have a geometry column 
 
 #Check:
-Arab_sf
-
+Arabsite
+plot(Arabsite_sf)
 
 
 
@@ -159,13 +160,13 @@ NCAboundary <- sf::st_read( paste0( habpath,
 ##Checking if geometry of spatial objects are valid :  -----------
 
 #Aug22:
-all(st_is_valid(Arab_sf))#TRUE
-all(is.na(st_dimension(Arab_sf)))#no missing geometry
+all(st_is_valid(Arabsite_sf))#TRUE
+all(is.na(st_dimension(Arabsite_sf)))#no missing geometry
 #FALSE : is there NA=false for all ?
 
 #June22:
-all(st_is_valid(Jrab_sf))#TRUE
-all(is.na(st_dimension(Arab_sf)))#no missing geometry
+all(st_is_valid(Jrabsite_sf))#TRUE
+all(is.na(st_dimension(Jrabsite_sf)))#no missing geometry
 #FALSE : is there NA=false for all ?
 
 
@@ -191,8 +192,8 @@ all(is.na(st_dimension(S.Route)))#no missing geometry
 #Checking CRS of all objects :  -----------
 sf::st_is_longlat(NCAgrid300m)#FALSE
 
-sf::st_crs(Jrab_sf)#WGS84, EPSG:4326
-sf::st_crs(Arab_sf)#WGS84, EPSG:4326
+sf::st_crs(Jrabsite_sf)#WGS84, EPSG:4326
+sf::st_crs(Arabsite_sf)#WGS84, EPSG:4326
 
 sf::st_crs(NCAboundary)#NAD83 / UTM zone 11N + NAVD88 height
 
@@ -216,12 +217,12 @@ st_crs(NCAb_rast) == st_crs(NCAgrid300m)
 #TRUE - so this is good to go
 
 #Check to see that the rest of the objects are in the same crs as raster:
-Jrab_rast<-sf::st_transform( Jrab_sf, st_crs( NCAgrid300m ) )
-st_crs(Jrab_rast) == st_crs(NCAgrid300m)
+Jrabsite_rast<-sf::st_transform( Jrabsite_sf, st_crs( NCAgrid300m ) )
+st_crs(Jrabsite_rast) == st_crs(NCAgrid300m)
 #TRUE 
 
-Arab_rast<-sf::st_transform( Arab_sf, st_crs( NCAgrid300m ) )
-st_crs(Arab_rast) == st_crs(NCAgrid300m)
+Arabsite_rast<-sf::st_transform( Arabsite_sf, st_crs( NCAgrid300m ) )
+st_crs(Arabsite_rast) == st_crs(NCAgrid300m)
 #TRUE
 
 
@@ -242,8 +243,8 @@ st_crs(Sroute_rast) == st_crs(NCAgrid300m)
 #Plotting Raster and Vector objects together to check :  -----------
 plot(NCAgrid300m)
 plot(st_geometry(NCAb_rast), add=TRUE)
-plot(st_geometry(Arab_rast), add=TRUE, col = "green")
-plot(st_geometry(Jrab_rast), add=TRUE, col="black")
+plot(st_geometry(Arabsite_rast), add=TRUE, col = "green")
+plot(st_geometry(Jrabsite_rast), add=TRUE, col="black")
 
 plot(st_geometry(Nroute_rast), add=TRUE, col="red")
 plot(st_geometry(Sroute_rast), add=TRUE, col="blue")
@@ -252,6 +253,7 @@ plot(st_geometry(Sroute_rast), add=TRUE, col="blue")
 # ALSO AS JC FOR HELP WITH CROPPING TO NCA BOUNDARY /ZOOM IN HERE TO SEE ROUTES AND PTS EASIER 
 
 
+##################################################################
 
 
 # Cropping raster to fit NCAboundary: -------------------------------------
@@ -260,74 +262,7 @@ plot(st_geometry(Sroute_rast), add=TRUE, col="blue")
 
 
 
-####################################################################
 
-
-
-
-# Checking extent and cropping raster to fit data more closely ------------
-
-##Checking Extents :  -----------
-st_bbox(Arab_rast)
-#    xmin     ymin     xmax     ymax 
-# -1626979  2409339 -1601886  2441791 
-
-st_bbox(Jrab_rast)
-# xmin     ymin     xmax     ymax 
-# -1627120  2408216 -1599687  2442709 
-
-st_bbox(NCAb_rast)
-# xmin     ymin     xmax     ymax 
-# -1650957  2367880 -1565864  2449339
-
-terra::ext(NCAgrid300m)
-#SpatExtent : -1660905, -1555905, 2357685, 2459385 (xmin, xmax, ymin, ymax)
-
-
-#########################################################################
-#WHAT DO I DO WITH THIS INFORMATION - HOW TO I CROP TO BETTER FIT THE 
-#JACKRABBIT DATA?
-
-#######################################################################
-
-
-##Checking Resolutions :  -----------
-res(NCAgrid300m)#300 300
-ncol(NCAgrid300m)#350
-NCAgrid300m
-
-
-###################################################################
-# NEED TO CROP TO MATCH NCA BOUNDARY SO IT IS MORE ZOOMED IN 
-# NEED TO FIGURE OUT HOW WE WANT TO PROCEED WITH MISSING JUNE22 GPS EXACT TIMES 
-# - CONFIGURING MST.TIME, DURATION , ETC. 
-# 
-
-
-
-# THEN CAN PULL FROM LINES 546-603 IN 300mGrid_BTJRAbundanceCounts.R to :
-#
-#  WORKING TOWARDS ANALYSIS STEPS - CALCULATING SAMPLING EFFORT
-# AND ASSIGNING TRANSECTING GRID CELLS TO POLYGON ROUTE LINES
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-##################################################################
 ####### VISUALITATIONS AND MOON PHASE ASSESSMENT #########
 #### WILL PULL FROM LINE 735-844 in 300mGrid_BTJRAbundanceCounts.R ######
 
@@ -358,9 +293,35 @@ NCAgrid300m
 # Save cleaned csv:
 #write.csv( x = ... , file = "...." )
 
+#write csv /sf object dataframe for NCAb_rast, Jrabsite_rast, Arabsite_rast, 
+#Nroute_rast, Sroute_rast:
+
+#MAY NOT BE ABLE TO SAVE RASTER/SF OBJECTS AS A CSV HERE 
+# NEED TO REMEMEBER HOW TO SAVE A SPATIAL OBJECT AND SAVE THESE TO BE USED IN 
+# RASTER2 SCRIPT AND JUST CALL THEM WITH CORRECT CRS AND SUCH THAT IS CHECKED 
+#IN THIS SCRIPT ABOVE 
+
+## S3 method for class 'sf' data.frame': 
+#st_write(obj, dsn, layer = NULL, ...)
+
+st_write(NCAb_rast, 
+         dsn = paste0(datapath, "Spotlights/Spatial.Data/NCAb_rast.shp"))
 
 
+st_write(Jrabsite_rast, 
+         dsn = paste0(datapath, "Spotlights/Spatial.Data/Jrabsite_rast.shp"))
+#worked
+st_write(Arabsite_rast, 
+         dsn = paste0(datapath, "Spotlights/Spatial.Data/Arabsite_rast.shp"))
 
+
+st_write(Nroute_rast, 
+         dsn = paste0(datapath, "Spotlights/Spatial.Data/Nroute_rast.shp"))
+
+st_write(Sroute_rast, 
+         dsn = paste0(datapath, "Spotlights/Spatial.Data/Sroute_rast.shp"))
+
+# LOAD WORKSPACE AND WORK THIS ABOVE SAVING STEP FOR SF/SPATIAL DATAFRAME 
 
 ## Save work space:   -----------
 # saving all data to the path
