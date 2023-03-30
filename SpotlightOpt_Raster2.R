@@ -116,8 +116,9 @@ Sroute_rast <- st_read(paste0(datapath,
                               "Spotlights/Spatial.Data/Sroute_rast.shp"))
 #BTJR 2022 spotlight survey routes sf objects created in SpotlightOpt_Raster.R
 #validated geometry and matching crs to NCAgrid300m raster in SpotlightOpt_Raster
-#importing route data:
 
+
+#importing route data: (MAY NOT BE NEEDED:)
 
 ##use these if need single line shape file from arcgis:
 #N.Route <-sf::st_read(paste0(datapath,"Shapefiles/Aug22_Spotlights_shp/N_RouteLine.shp"))
@@ -133,6 +134,8 @@ Sroute_rast <- st_read(paste0(datapath,
 # Sroute_rast<-sf::st_transform( S.Route, st_crs( NCAgrid300m ) )
 # st_crs(Sroute_rast) == st_crs(NCAgrid300m)
 # #TRUE 
+
+
 
 
 
