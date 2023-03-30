@@ -116,6 +116,24 @@ Sroute_rast <- st_read(paste0(datapath,
                               "Spotlights/Spatial.Data/Sroute_rast.shp"))
 #BTJR 2022 spotlight survey routes sf objects created in SpotlightOpt_Raster.R
 #validated geometry and matching crs to NCAgrid300m raster in SpotlightOpt_Raster
+#importing route data:
+
+
+##use these if need single line shape file from arcgis:
+#N.Route <-sf::st_read(paste0(datapath,"Shapefiles/Aug22_Spotlights_shp/N_RouteLine.shp"))
+
+#S.Route <-sf::st_read(paste0(datapath,"Shapefiles/Aug22_Spotlights_shp/S_RouteLine.shp"))
+#looks good - but will need to match crs to raster tho is use these :
+
+## Converting CRS of routes to match raster:
+#Nroute_rast<-sf::st_transform( N.Route, st_crs( NCAgrid300m ) )
+# st_crs(Nroute_rast) == st_crs(NCAgrid300m)
+# #TRUE 
+# 
+# Sroute_rast<-sf::st_transform( S.Route, st_crs( NCAgrid300m ) )
+# st_crs(Sroute_rast) == st_crs(NCAgrid300m)
+# #TRUE 
+
 
 
 ## Importing Raster Data:  -----------
@@ -158,7 +176,7 @@ plot(rast_template)
 plot(NCAgrid300m)
 
 
-#Making sure teplate raster crs matches with raster NCAgrid300m:
+#Making sure template raster crs matches with raster NCAgrid300m:
 crs(NCAgrid300m)#+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0+datum=WGS84 +units=m +no_defs
 
 st_crs(rast_template) == st_crs(NCAgrid300m)
@@ -175,6 +193,8 @@ ncol(rast_template)#350
 #matches
 
 
+
+
 # Manipulating Blank Raster  ----------------------------------------------
 
 #Plotting Raster and Vector objects together to check :  -----------
@@ -189,10 +209,22 @@ plot(st_geometry(Sroute_rast), add=TRUE, col="blue")
 
 
 
+
+#################### STILL WORKING ON : #######################################
+
+
 #transect each poly.with a grid cell :  -----------
+
+
+
+
+############################################################################
+#These steps appear to not work rn - matts method/steps may need to be ajusted 
+# becasue this is not working rn 
+
 st_intersection(rast_template, Nroute_rast)
 #cant use on raster 
-############################################################################
+
 terra:: extract(x = rast_template, y = Nroute_rast)
 #HELP NOTES::
 # Extract values from a SpatRaster for a set of locations. 
@@ -207,9 +239,6 @@ terra:: extract(x = rast_template, y = Nroute_rast)
 # extract(x, y, fun=NULL, method="simple", list=FALSE, factors=TRUE, 
 #         cells=FALSE, xy=FALSE, weights=FALSE, exact=FALSE,
 #         touches=is.lines(y), layer=NULL, ...)
-
-
-
 
 
 
@@ -228,6 +257,8 @@ terra:: extract(x = rast_template, y = Nroute_rast)
 terra:: extract(x = NCAgrid300m, y = Nroute_rast)
 #nope
 
+st_area(Nroute_rast)#0 [m^2]
+#Doesnt work 
 
 #############################################################################
 
@@ -239,8 +270,6 @@ terra:: extract(x = NCAgrid300m, y = Nroute_rast)
 # Analyzing Spatial Data --------------------------------------------------
 
 
-st_area(Nroute_rast)#0 [m^2]
-#Doesnt work 
 
 
 
@@ -252,9 +281,26 @@ st_area(Nroute_rast)#0 [m^2]
 #terra::rasterize		  = Rasterize vector data
 
 # do we need to rasterize vector data to analyze ? 
+# - i belive so 
+# so i will be doing that now - chapt 6 ref :
+# arguments are, x, vector object to be rasterized and, y, a ‘template raster’ object defining the extent, resolution and CRS of the output. 
+# By default fun = "last" is used but other options such as fun = "length" can be used, in this case to count the number of cycle hire points in each grid cell
+# Nroute_rast needs to be turned into a spat vector here firts before u can run terra::rasterize()
+#creating Objects of class SpatVector.:
+
+Nroute_rast<-terra::vect(Nroute_rast)
+#check:
+class(Nroute_rast)
+#spatvector 
 
 
+terra::rasterize(Nroute_rast, rast_template, fun = "length")
 
+
+#help docs info:
+## S4 method for signature 'SpatVector,SpatRaster'
+# rasterize(x, y, field="", fun, ..., background=NA, touches=FALSE,
+#           update=FALSE, sum=FALSE, cover=FALSE, filename="", overwrite=FALSE, wopt=list())
 
 
 #############################################################################
