@@ -297,8 +297,8 @@ class(Nroute_rast)
 #spatvector 
 
 
-terra::rasterize(Nroute_rast, rast_template, fun = "length")
-
+A<-terra::rasterize(Nroute_rast, rast_template, fun = "length")
+plot(A)
 
 #help docs info:
 ## S4 method for signature 'SpatVector,SpatRaster'
