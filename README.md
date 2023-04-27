@@ -12,7 +12,8 @@ The Spotlight Optimization folder will house all the current usable code for wor
 to determine the optimal spotlight methodology. 
 
 
-# Spotlight Optimization Project : Data Description ---------------------------------------------
+# Spotlight Optimization Project : Data Description 
+---------------------------------------------
 These scripts waere developed to clean and visualize black-tailed jackrabbit 
 count data collected using spotlight surveys conducted at dusk (10pm-2am) 
 and dawn(2am-6am) in the Morley Nelson Birds of Prey NCA. 
@@ -29,7 +30,8 @@ rabbit observations in between these sites, which we named: North Route and Sout
 In Aug2023 we will be adding a third route that encompasses Golden Eagle territories. 
 
 
-# Aug2022 Spotlight Survey Details: -------------------------------------------------
+# Aug2022 Spotlight Survey Details: 
+-------------------------------------------------
 The first two night of surveys were done as a team of 4 - with all technician in the 
 same truck, visiting all four sites together to standardize training measures
 and increase confidence in Identification skills in the field.
@@ -38,7 +40,8 @@ while surveying in bewteen sites (along the route) incidental rabbit observation
 while technicians were driving no faster than 35mph, were also recorded on the GPS
 
 
-# June2022 Survey Details : -------------------------------------------------
+# June2022 Survey Details : 
+-------------------------------------------------
 We relied on tablets rather than GPS units to gather GPS points of rabbits 
 observed along the routes. This led to a lack of data for this survey period
 - specifically the exact time that the GPS point was taken during the surveys
@@ -57,10 +60,10 @@ Includes: Date, Crew_name (dawn or dusk), Rab.Obs (same as described in Arab exc
 Because we used tablets to collect the location data of each rabbit observation in June22 we were not able to extract the exact time of the observation but we were able to write code to determine which route the points were from with the date. 
 
 
-# Jrab_sf  & Arab_sf: -------------------------------------------------
+# Jrab_sf  & Arab_sf: ------------------------------------------
 These files are the exact same as Arab and Jrab (described above) but they were altered to be sf objects and then saved in that form to be called in later scripts if needed. 
 
-# SpotlightOpt_RabLoc : --------------------------------------------
+# SpotlightOpt_RabLoc : ----------------------------------------
 Pulls data from dusk and dawn GPS’s, datasets,  and shape files instead of altered CSv’s from other previous scripts. 
 Other scripts may be irrelevant prior to this because of this data pulling direct method. 
 Aug22 and June22 site level data and rabbit observation have been proofed, formatted and combined together with each season's data. Into 2 separate DFs for each month’s spotlight surveys. Jackrabbits have been filtered out from cottontails. 
@@ -82,7 +85,7 @@ Save work space:   -----------
 save.image("Opt_RabLoc")
 
 
-# SpotlightOpt_Raster :--------------------------------------------
+# SpotlightOpt_Raster :---------------------------------------
 Importing: Aug22  and June22 spotlight jackrabbit observation location GPS and site level data, North and South Route shape files, NCA boundary line and 300m raster files (to be overlaid with by spotlight survey jackrabbit location/site data).  
 
 Background --------
@@ -119,7 +122,7 @@ Save work space:   -----------
 save.image("SpotlightOpt_Raster.RData")
 
 
-# SpotlightOpt_Raster2 : ------------------------------------------------------
+# SpotlightOpt_Raster2 : -------------------------------------------------
 This script works off the files that were created and saved in SpotlightOpt_Raster.R script. 
 
 Background -----------
@@ -137,8 +140,12 @@ This script's purpose:
 
 
 
+
+
+
+
 # Irrelevent Scripts (need to be moved to old scripts folder)
-# SpotlightOptimization_SiteInfo : --------------------------------------------
+SpotlightOptimization_SiteInfo : ------------------------------------
 It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. 
 May be irrelevant now that SpotlightOpt_RabLoc.R script was made after this 
 ONLY THING USABLE IS BACKGROUND DESCRIPTION HERE IN THIS SCRIPT
@@ -155,23 +162,22 @@ write.csv( x = J_df.Site,
            file = paste0( datapath,"June22/Site_June22.csv" ) )
 
 write.csv( J_Rab, paste0( datapath, "June22/Rab.Loc_Simplified.Edit.csv") )
-## Save work space:   -----------
-# saving all data to the path
+Save work space:   -----------
 save.image( "Opt_Site.RData" )
 
-# Opt_RabLoc :-------------------------------------------------
+Opt_RabLoc :---------------------------------------------
 It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. 
 
-# Opt_Visulizations: -------------------------------------------------
+Opt_Visulizations: ---------------------------------------
 It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. Leticia was just messing around with potential visuals we can pull from the Spotlight data sets,
 
-# Site_June2022: -------------------------------------------------
+Site_June2022: ---------------------------------------------
 It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. 
 
 CSV file of site level data collected in June 2022 spotlight surveys. During the first real pilot season beginning (June2022), we were still working out what was the best protocol. So, we started by surveying 4 sites in the Morley Nelson Birds of Prey National Conservation Area (NCA) that have varying and different habitat types in each. This data set includes : Date, Crew_name, Night_number, (site level) Start_time and End_time of surveys, Site (name), Start_wind.km.h., DayofYr, and RouteID. RouteID was written in the code in the “SCRIPTNAME”
 
 
 
-# Github Code Source: -----------------------------------------------------
+# Github Code Source: -------------------------------------------------
 #Using the quantitativeconservationlab / Jackrabbits GitHub Repository 
 #to store scripts. URL:https://github.com/quantitativeconservationlab/Jackrabbits.git
