@@ -1,12 +1,5 @@
 # Jackrabbits
 
-# Github Code Source: -----------------------------------------------------
-
-
-#Using the quantitativeconservationlab / Jackrabbits GitHub Repository 
-#to store scripts. URL:https://github.com/quantitativeconservationlab/Jackrabbits.git
-
-
 This repository is used to store scripts from Leticia Camacho’s MS jackrabbit project. 
 It includes old scripts that were developed prior to Spring2023 to assess the spotlight survey data collected in Summer 2022.
 These scripts were developed at the beginning learning stage in Leticia’s coding career and jackrabbit project. 
@@ -19,105 +12,60 @@ The Spotlight Optimization folder will house all the current usable code for wor
 to determine the optimal spotlight methodology. 
 
 
-# Data Description ---------------------------------------------
-##This script was developed to clean and visualize black-tailed jackrabbit 
-##count data collected using spotlight surveys conducted at dusk (10pm-2am) 
-#and dawn(2am-6am) in the Morley Nelson Birds of Prey NCA. 
-#Spotlight surveys were conducted by two teams of two trained technicians each
-#(1 lead and 1 undergrad. pairs) during 8 day period in June and August 2022. 
-#There are 4 total sites surveyed in August2022. All 4 sites were surveyed each night
-#either by the dawn or dusk crew (road/weather conditions permitting). 
-#Survey crews coordinated to randomize the order,start time, and start locations
-#of each night and site that was surveyed (planning was done before hand @ 
-#beginning of season).
+# Spotlight Optimization Project : Data Description ---------------------------------------------
+These scripts waere developed to clean and visualize black-tailed jackrabbit 
+count data collected using spotlight surveys conducted at dusk (10pm-2am) 
+and dawn(2am-6am) in the Morley Nelson Birds of Prey NCA. 
+Spotlight surveys were conducted by two teams of two trained technicians each
+(1 lead and 1 undergrad. pairs) during 8 day period in June and August 2022. 
+There are 4 total sites surveyed in June2022. All 4 sites were surveyed each night
+either by the dawn or dusk crew (road/weather conditions permitting). 
+Survey crews coordinated to randomize the order,start time, and start locations
+of each night and site that was surveyed (planning was done before hand @ 
+beginning of season).
+In August2022 we switched from focusing on site based data collected to route based collection 
+Where we still surveyed the same sites as in June but we also rigourously collected any 
+rabbit observations in between these sites, which we named: North Route and South Route 
+In Aug2023 we will be adding a third route that encompasses Golden Eagle territories. 
 
 
-# Aug2022 Survey Details: -------------------------------------------------
-#The first 2 nights were an exception to the above statement about the individual teams. 
-#The first two night of surveys were done as a team of 4 - with all technician in the 
-#same truck, visiting all four sites together to standardize training measures
-#and increase confidence in Identification skills in the field.
-#along each site specific route the technicians drove no faster that 10mph 
-#while surveying each site route 
-#incidental rabbit observations, while technicians were driving no faster than 
-#35mph, were also recorded on the GPS
-#
+# Aug2022 Spotlight Survey Details: -------------------------------------------------
+The first two night of surveys were done as a team of 4 - with all technician in the 
+same truck, visiting all four sites together to standardize training measures
+and increase confidence in Identification skills in the field.
+along each site specific route the technicians drove no faster that 10mph 
+while surveying in bewteen sites (along the route) incidental rabbit observations,
+while technicians were driving no faster than 35mph, were also recorded on the GPS
+
 
 # June2022 Survey Details : -------------------------------------------------
-## We relied on tablets rather than GPS units to gather GPS points of rabbits 
-## observed along the routes. This led to a lack of data for this survey period
-## - specifically the exact time that the GPS point was taken during the surveys
-##    
+We relied on tablets rather than GPS units to gather GPS points of rabbits 
+observed along the routes. This led to a lack of data for this survey period
+- specifically the exact time that the GPS point was taken during the surveys
 
 
 
-
-Following is individual breakdowns/background information for each script currently found within the SpotlightOptimization folder:
------------------------------------------------------------------------------
-
-Arab: -------------------------------------------------
+# Following is individual breakdowns/background information for each script currently found within the SpotlightOptimization folder:
+# Arab: -------------------------------------------------
 A csv file containing the cleaned jackrabbit observations data from August 2022 spotlight surveys collected on GPS units in the field for each individual jackrabbit observation. 
 Includes: Rab.Obv (all =Jackrab, because the total number of jackrabbits and cottontails observations from Aug22 was filtered to only include jackrabbits), name (this is the name of the observation inputted in the GPS in the field. Ja=Jackrabbit Adult, Jj= jackrabbit juvenile, Junk= jackrabbit unknown age class, Ca=Cottontail adult , Cj= cottontail juvenile, Cunkn=Cottontail  unknown age class, XXXX i = An (i) is added at the end of a species/age class when it was an incidental (meaning it was not not on one of the individual sites used in the beginning of 2022 - we switched to a North and South Routes method instead in late 2022), XXXX i e = (e) is added at the end of a GPS code if it was an incidental observed on the way out of the field or at the end of the route surveys, XXXX i b = (b) is added at the end of a GPS code if it was an incidental observed on the way into the field or at the beginning of the route surveys), Date, MST.time (time of GPS point taken in the field of the individual jackrabbit observation, converted to Mountain Standard Time), Hour (hour of night extracted from MST.time), lat, lon, geometry, SurveyNight (night number of when observation was taken - this was done because there is a 2 survey crews [dusk (10pm-2am) and dawn(2am-6am)] operating out in the field around the same time, and the dusk crew’s survey time overlapped 2 dates because they surveyed 10pm-2am. So, I developed the SurveyNight to make it easier to determine what day within the survey period the GPS points were made. 
 
-Jrab:-------------------------------------------------
+# Jrab:-------------------------------------------------
 A csv file containing the cleaned jackrabbit observations data from June 2022 spotlight surveys taken on tablets for each individual jackrabbit observation in the field. 
 Includes: Date, Crew_name (dawn or dusk), Rab.Obs (same as described in Arab except incidentals were labeled with and IO, and in june we did not know that we would need an (e or b) label to show us if we were beginning or ending a survey route, so there is no labels that show this in this data set), lat, lon, Night-number (same as SurveyNight in Arab in which each observation is given a night number of when observation was taken - this was done because there is a 2 survey crews [dusk (10pm-2am) and dawn(2am-6am)] operating out in the field around the same time, and the dusk crew’s survey time overlapped 2 dates because they surveyed 10pm-2am. So, I developed the SurveyNight to make it easier to determine what day within the survey period the GPS points were made, RouteID (either S.Route = southern route, or N.Route=Northern route) DayofYr. 
 
 Because we used tablets to collect the location data of each rabbit observation in June22 we were not able to extract the exact time of the observation but we were able to write code to determine which route the points were from with the date. 
 
 
-Jrab_sf  & Arab_sf: -------------------------------------------------
+# Jrab_sf  & Arab_sf: -------------------------------------------------
 These files are the exact same as Arab and Jrab (described above) but they were altered to be sf objects and then saved in that form to be called in later scripts if needed. 
 
-
-Opt_RabLoc :-------------------------------------------------
-It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. 
-
-Opt_Visulizations: -------------------------------------------------
-It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. Leticia was just messing around with potential visuals we can pull from the Spotlight data sets,
-
-
-Site_June2022: -------------------------------------------------
-It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. 
-
-CSV file of site level data collected in June 2022 spotlight surveys. During the first real pilot season beginning (June2022), we were still working out what was the best protocol. So, we started by surveying 4 sites in the Morley Nelson Birds of Prey National Conservation Area (NCA) that have varying and different habitat types in each. This data set includes : Date, Crew_name, Night_number, (site level) Start_time and End_time of surveys, Site (name), Start_wind.km.h., DayofYr, and RouteID. RouteID was written in the code in the “SCRIPTNAME”
-
-SpotlightOptimization_SiteInfo : --------------------------------------------
-It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. 
-May be irrelevant now that SpotlightOpt_RabLoc.R script was made after this 
-ONLY THING USABLE IS BACKGROUND DESCRIPTION HERE IN THIS SCRIPT
-
-Background -----------
-## This script was developed by Leticia Camacho to research/evaluate 
-## the jackrabbit spotlight survey 2022 data and determine optimal 
-## spotlight survey methodology. 
-
-## This script is the first in a group of ~three optimization scripts to achieve
-## the above goal.
-
-This script pulls the site level information and rabbit GPS observation location data together from June22 and Aug22 spotlight surveys. Then combine them into one csv file by merging the datasets. 
-*Appears to be missing Aug22 combined df ?
- 
-Save cleaned csv:
-write.csv( x = J_df.Site, 
-           file = paste0( datapath,"June22/Site_June22.csv" ) )
-
-write.csv( J_Rab, paste0( datapath, "June22/Rab.Loc_Simplified.Edit.csv") )
-## Save work space:   -----------
-# saving all data to the path
-save.image( "Opt_Site.RData" )
-
-
-
-
-
-SpotlightOpt_RabLoc : --------------------------------------------
+# SpotlightOpt_RabLoc : --------------------------------------------
 Pulls data from dusk and dawn GPS’s, datasets,  and shape files instead of altered CSv’s from other previous scripts. 
 Other scripts may be irrelevant prior to this because of this data pulling direct method. 
 Aug22 and June22 site level data and rabbit observation have been proofed, formatted and combined together with each season's data. Into 2 separate DFs for each month’s spotlight surveys. Jackrabbits have been filtered out from cottontails. 
 
-Save csv's:   -----------
-Save cleaned csv:
+Save cleaned csv's:   -----------
 Rab.locations:
 write.csv( x = AJrab, file = paste0(datapath, "Aug22/AJrab.csv" ) )
 write.csv( x = JJrab, file = paste0(datapath, "June22/JJrab.csv" ) )
@@ -131,10 +79,10 @@ write.csv( x = A, file = paste0(datapath, "Aug22/AJrabRoutes.csv" ) )
 write.csv( x = J, file = paste0(datapath, "June22/JJrabRoutes.csv" ) )
 
 Save work space:   -----------
-# saving all data to the path
 save.image("Opt_RabLoc")
 
-SpotlightOpt_Raster :--------------------------------------------
+
+# SpotlightOpt_Raster :--------------------------------------------
 Importing: Aug22  and June22 spotlight jackrabbit observation location GPS and site level data, North and South Route shape files, NCA boundary line and 300m raster files (to be overlaid with by spotlight survey jackrabbit location/site data).  
 
 Background --------
@@ -147,7 +95,6 @@ This script's purpose:
        - calculate duration and sampling efforts by assigning raster cellID to  RabLoc data for 2022 spotlight surveys
 
 Saving Data --------
-Save csv's:   -----------
 write csv /sf object dataframe for NCAb_rast, Jrabsite_rast, Arabsite_rast
 (Jrabsite_rast = combined site level and jackrabbit location data into one csv that was converted to the correct format to match the 300m NCA raster. So they can be used in the SpotlightOpt_Raster2.R script next 
 
@@ -168,26 +115,63 @@ st_write(Jrabsite_rast,
 st_write(Arabsite_rast, 
          dsn = paste0(datapath, "Spotlights/Spatial.Data/Arabsite_rast.shp"))
 
-
- Save work space:   -----------
-saving all data to the path
+Save work space:   -----------
 save.image("SpotlightOpt_Raster.RData")
 
 
-SpotlightOpt_Raster2 : ------------------------------------------------------
+# SpotlightOpt_Raster2 : ------------------------------------------------------
 This script works off the files that were created and saved in SpotlightOpt_Raster.R script. 
 
-
- Background -----------
+Background -----------
 This script in the 4th of 3 spotlight methodology optimization scripts 
 This script's purpose:
-
-       - create empty raster that matched specs of original raster (300m rast) 
-          ref chapter 6 for notes and steps:https://r.geocompx.org/raster-vector.html#rasterization
-
-       - add route shape files (polygons) to the blank raster (~"overlap")
-
-       - calc how much of the route lines fall within each grid cell (terra::extract)(rasterization)
+ - create empty raster that matched specs of original raster (300m rast). Ref. chapter 6 for notes and steps:https://r.geocompx.org/raster-vector.html#rasterization
+ - add route shape files (polygons) to the blank raster (~"overlap")
+ - calc how much of the route lines fall within each grid cell (terra::extract)(rasterization)
 
 
------------ Ended off here ----------- (March2023) -----------
+
+# ----------- Ended off here ----------- (March2023) -----------
+
+
+
+
+
+# Irrelevent Scripts (need to be moved to old scripts folder)
+# SpotlightOptimization_SiteInfo : --------------------------------------------
+It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. 
+May be irrelevant now that SpotlightOpt_RabLoc.R script was made after this 
+ONLY THING USABLE IS BACKGROUND DESCRIPTION HERE IN THIS SCRIPT
+Background -----------
+This script was developed by Leticia Camacho to research/evaluate 
+the jackrabbit spotlight survey 2022 data and determine optimal spotlight survey methodology. 
+This script is the first in a group of ~three optimization scripts to achieve the above goal.
+
+This script pulls the site level information and rabbit GPS observation location data together from June22 and Aug22 spotlight surveys. Then combine them into one csv file by merging the datasets. 
+*Appears to be missing Aug22 combined df ?
+ 
+Save cleaned csv:
+write.csv( x = J_df.Site, 
+           file = paste0( datapath,"June22/Site_June22.csv" ) )
+
+write.csv( J_Rab, paste0( datapath, "June22/Rab.Loc_Simplified.Edit.csv") )
+## Save work space:   -----------
+# saving all data to the path
+save.image( "Opt_Site.RData" )
+
+# Opt_RabLoc :-------------------------------------------------
+It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. 
+
+# Opt_Visulizations: -------------------------------------------------
+It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. Leticia was just messing around with potential visuals we can pull from the Spotlight data sets,
+
+# Site_June2022: -------------------------------------------------
+It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. 
+
+CSV file of site level data collected in June 2022 spotlight surveys. During the first real pilot season beginning (June2022), we were still working out what was the best protocol. So, we started by surveying 4 sites in the Morley Nelson Birds of Prey National Conservation Area (NCA) that have varying and different habitat types in each. This data set includes : Date, Crew_name, Night_number, (site level) Start_time and End_time of surveys, Site (name), Start_wind.km.h., DayofYr, and RouteID. RouteID was written in the code in the “SCRIPTNAME”
+
+
+
+# Github Code Source: -----------------------------------------------------
+#Using the quantitativeconservationlab / Jackrabbits GitHub Repository 
+#to store scripts. URL:https://github.com/quantitativeconservationlab/Jackrabbits.git
