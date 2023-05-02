@@ -171,27 +171,27 @@ NCAgrid300m
 
 
 # Creating a Blank Raster to Match Original  ------------------------------
-rast_template <- rast(ext(NCAgrid300m),resolution = 300, 
+rast_template300 <- rast(ext(NCAgrid300m),resolution = 300, 
                       crs = st_crs(NCAgrid300m)$wkt)
 #Check:
-plot(rast_template)
+plot(rast_template300)
 plot(NCAgrid300m)
 
 
 #Making sure template raster crs matches with raster NCAgrid300m:
 crs(NCAgrid300m)#+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0+datum=WGS84 +units=m +no_defs
 
-st_crs(rast_template) == st_crs(NCAgrid300m)
+st_crs(rast_template300) == st_crs(NCAgrid300m)
 #TRUE
 
 ##Checking Extents :  -----------
-terra::ext(rast_template)
+terra::ext(rast_template300)
 #SpatExtent : -1660905, -1555905, 2357685, 2459385 (xmin, xmax, ymin, ymax)
 #matches
 
 ##Checking Resolutions :  -----------
-res(rast_template)#300 300
-ncol(rast_template)#350
+res(rast_template300)#300 300
+ncol(rast_template300)#350
 #matches
 
 
@@ -200,11 +200,11 @@ ncol(rast_template)#350
 # Manipulating Blank Raster  ----------------------------------------------
 
 #Creating cropped raster so can zoom in move on NCA and actually see routes
-rast_template_crop <- terra::crop(rast_template, NCAb_rast)
+rast_template300_crop <- terra::crop(rast_template300, NCAb_rast)
 
 
 #Plotting Raster and Vector objects together to check :  -----------
-plot(rast_template_crop)
+plot(rast_template300_crop)
 plot(st_geometry(NCAb_rast), add=TRUE)
 plot(st_geometry(Arabsite_rast), add=TRUE, col = "green")
 plot(st_geometry(Jrabsite_rast), add=TRUE, col="black")
@@ -226,7 +226,7 @@ Nroute_spat <- terra::vect(Nroute_rast)
 class(Nroute_spat)#worked
 
 #Rasterization of Routes:
-NRoute_test <- terra::rasterize(Nroute_spat, rast_template_crop)#worked
+NRoute_test <- terra::rasterize(Nroute_spat, rast_template300_crop)#worked
 # But what is it telling us?
 summary(NRoute_test)#dont understand what this tells us?
 plot(NRoute_test)#just shows Nroute basically 
@@ -242,7 +242,7 @@ plot(NRoute_test)#just shows Nroute basically
 
 #I tried to add this to the end of Nroute_test line but it did not see to change anything?
 #what is the output we are looking for here?
-NRoute_test2 <- terra::rasterize(Nroute_spat, rast_template_crop, fun = "length")
+NRoute_test2 <- terra::rasterize(Nroute_spat, rast_template300_crop, fun = "length")
 plot(NRoute_test2)
 #this is not working 
 # they just look the same 
@@ -255,7 +255,7 @@ class(Arabsite_rast)
 Arabsite_spat <- terra::vect(Arabsite_rast)
 class(Arabsite_spat)
 
-Arabsite_test <- terra::rasterize(Arabsite_spat, rast_template_crop, fun = "length")
+Arabsite_test <- terra::rasterize(Arabsite_spat, rast_template300_crop, fun = "length")
 plot(Arabsite_test)#shows the number or rab obs in each grid cell 
 
 #helped a little bit to zoom in but still very hard to see but this method did 
@@ -268,67 +268,43 @@ class(Jrabsite_rast)
 Jrabsite_spat <- terra::vect(Jrabsite_rast)
 class(Jrabsite_spat)
 
-Jrabsite_test <- terra::rasterize(Jrabsite_spat, rast_template_crop, fun = "length")
+Jrabsite_test <- terra::rasterize(Jrabsite_spat, rast_template300_crop, fun = "length")
 plot(Jrabsite_test)#shows the number or rab obs in each grid cell 
 #works but still very zoomed out to be able to see much here
+#############################################################################
+
+
 
 
 
 #transect each polygon with a grid cell :  -----------
+##JOHN's METHOD:
+
+rast_template <- rast(ext(NCAgrid300m),resolution = 1000, 
+                      crs = st_crs(NCAgrid300m)$wkt)
+rast_polys<-as.polygons(rast_template, dissolve=FALSE)
+rast_polys_sf<- sf::st_as_sf(rast_polys)
+NRouteint = st_intersection(Nroute_rast, rast_polys_sf)
+NRouteint$len = st_length(NRouteint)
+rast_polys_sf$Id = 1:nrow(rast_polys_sf)
+join = st_join(rast_polys_sf, NRouteint)
+###very slow with 300 m : so changed to 1000m res
+out = group_by(join, Id.x) %>%
+  summarize(length = sum(len, na.rm=T))
+
+###south route
+SRouteint = st_intersection(Sroute_rast, rast_polys_sf)
+SRouteint$len = st_length(SRouteint)
+rast_polys_sf$Id = 1:nrow(rast_polys_sf)
+join2 = st_join(rast_polys_sf, SRouteint)
+###very slow with 300 m
+out2 = group_by(join2, Id.x) %>%
+  summarize(length = sum(len, na.rm=T))
+###combine
+rast_polys_sf$length<-out$length+out2$length
 
 
-
-
-############################################################################
-#These steps appear to not work here - Matt's method/steps may need to be adjusted 
-# because this is not working here 
-
-st_intersection(rast_template, Nroute_rast)
-#cant use on raster 
-
-terra:: extract(x = rast_template, y = Nroute_rast)
-#HELP NOTES::
-# Extract values from a SpatRaster for a set of locations. 
-#The locations can be a SpatVector (points, lines, polygons), 
-#a matrix with (x, y) or (longitude, latitude – in that order!) 
-#coordinates, or a vector with cell numbers.
-# 
-# When argument y is a SpatVector, and list=FALSE, the first column has the ID 
-#(record number) of the SpatVector used.
-
-# S4 method for signature 'SpatRaster,SpatVector'
-# extract(x, y, fun=NULL, method="simple", list=FALSE, factors=TRUE, 
-#         cells=FALSE, xy=FALSE, weights=FALSE, exact=FALSE,
-#         touches=is.lines(y), layer=NULL, ...)
-
-
-
-#creating Objects of class SpatVector.:
-
-Nroute_rast<-terra::vect(Nroute_rast)
-#check:
-class(Nroute_rast)
-#spatvector 
-
-
-#try again 
-terra:: extract(x = rast_template, y = Nroute_rast)
-#Error: [extract] raster has no value
-
-terra:: extract(x = NCAgrid300m, y = Nroute_rast)
-#nope
-
-st_area(Nroute_rast)#0 [m^2]
-#Doesnt work 
-
-#############################################################################
-
-
-
-
-
-
-# Analyzing Spatial Data --------------------------------------------------
+plot(rast_polys_sf)
 
 
 
@@ -336,35 +312,6 @@ st_area(Nroute_rast)#0 [m^2]
 
 
 
-##############################################################################
-#raster::rasterize		= Rasterize points, lines, or polygons
-
-#terra::rasterize		  = Rasterize vector data
-
-# do we need to rasterize vector data to analyze ? 
-# - i belive so 
-# so i will be doing that now - chapt 6 ref :
-# arguments are, x, vector object to be rasterized and, y, a ‘template raster’ object defining the extent, resolution and CRS of the output. 
-# By default fun = "last" is used but other options such as fun = "length" can be used, in this case to count the number of cycle hire points in each grid cell
-# Nroute_rast needs to be turned into a spat vector here firts before u can run terra::rasterize()
-#creating Objects of class SpatVector.:
-
-Nroute_rast<-terra::vect(Nroute_rast)
-#check:
-class(Nroute_rast)
-#spatvector 
-
-
-A<-terra::rasterize(Nroute_rast, rast_template, fun = "length")
-plot(A)
-
-#help docs info:
-## S4 method for signature 'SpatVector,SpatRaster'
-# rasterize(x, y, field="", fun, ..., background=NA, touches=FALSE,
-#           update=FALSE, sum=FALSE, cover=FALSE, filename="", overwrite=FALSE, wopt=list())
-
-
-#############################################################################
 
 
 
