@@ -145,39 +145,8 @@ This script's purpose:
 
 
 
-# Irrelevent Scripts (need to be moved to old scripts folder)
-SpotlightOptimization_SiteInfo : ------------------------------------
-It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. 
-May be irrelevant now that SpotlightOpt_RabLoc.R script was made after this 
-ONLY THING USABLE IS BACKGROUND DESCRIPTION HERE IN THIS SCRIPT
-Background -----------
-This script was developed by Leticia Camacho to research/evaluate 
-the jackrabbit spotlight survey 2022 data and determine optimal spotlight survey methodology. 
-This script is the first in a group of ~three optimization scripts to achieve the above goal.
 
-This script pulls the site level information and rabbit GPS observation location data together from June22 and Aug22 spotlight surveys. Then combine them into one csv file by merging the datasets. 
-*Appears to be missing Aug22 combined df ?
  
-Save cleaned csv:
-write.csv( x = J_df.Site, 
-           file = paste0( datapath,"June22/Site_June22.csv" ) )
-
-write.csv( J_Rab, paste0( datapath, "June22/Rab.Loc_Simplified.Edit.csv") )
-Save work space:   -----------
-save.image( "Opt_Site.RData" )
-
-Opt_RabLoc :---------------------------------------------
-It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. 
-
-Opt_Visulizations: ---------------------------------------
-It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. Leticia was just messing around with potential visuals we can pull from the Spotlight data sets,
-
-Site_June2022: ---------------------------------------------
-It is now irrelevant and possibly unnecessary. Could potentially be moved to the old scripts file. 
-
-CSV file of site level data collected in June 2022 spotlight surveys. During the first real pilot season beginning (June2022), we were still working out what was the best protocol. So, we started by surveying 4 sites in the Morley Nelson Birds of Prey National Conservation Area (NCA) that have varying and different habitat types in each. This data set includes : Date, Crew_name, Night_number, (site level) Start_time and End_time of surveys, Site (name), Start_wind.km.h., DayofYr, and RouteID. RouteID was written in the code in the “SCRIPTNAME”
-
-
 
 # Github Code Source: -------------------------------------------------
 #Using the quantitativeconservationlab / Jackrabbits GitHub Repository 
