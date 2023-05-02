@@ -1,5 +1,5 @@
 # Background --------------------------------------------------------------
-# This script in the 3rd of 3 spotlight methodology optimization scripts 
+# 
 # This script's purpose:
 #        - Develope spatial objects from the rab loc data to be used in next steps (Spatial analysis)
 #        - combine rabloc to NCA 300m raster 
@@ -12,11 +12,10 @@
 
 # Setup -------------------------------------------------------------------
 
-## Set up your work space and load relevant packages -----------
+## Setting up work space and load packages -----------
 
-## Clean your work space to reset your R environment. 
+## Clean your work space : reset R environment. 
 rm( list = ls() )
-
 
 
 ## Load packages relevant to this script:  -------------
@@ -32,12 +31,11 @@ options( dplyr.width = Inf, dplyr.print_min = 100 )
 # Setting Working Directory -----------------------------------------------
 
 
-# Set working directory. This is the path to your Rstudio folder for this 
-# project. If you are in your correct Rstudio project then it should be:
+# Set working directory. =The path to your Rstudio folder for this 
+# project (LC=on desktop Rscripts folder). 
 
-getwd()#"C:/Users/leticiacamacho/Documents/BTJR_MSProject/Rcode/Spotlights_Hab_2022/Jackrabbits"
+getwd()
 
-# if so then:
 workdir <- getwd() 
 #creating working directory as an object so you can call it easier 
 #     - without having to type it out or re-run each time.
@@ -45,11 +43,9 @@ workdir <- getwd()
 
 
 
-
-
 # Load and Create Data ----------------------------------------------------
-# Set data paths:  -----------
 
+# Set data paths:  -----------
 #Creating pathway to call the habitat NLCD data from the common drive
 habpath <- "Z:/Common/QCLData/Habitat/" 
 #Creating pathway to call the BTJR data from the common drive
@@ -81,7 +77,7 @@ Arabsite <- read.csv(paste0(datapath, "Spotlights/Aug22/AJrabRoutes.csv"))
 
 # June22:  -----------
 
-Jsite<-read.csv(paste0(datapath, "Spotlights/June22/JRoutes.csv"))
+#Jsite<-read.csv(paste0(datapath, "Spotlights/June22/JRoutes.csv"))
 #site level info for June 2022 spotlight surveys 
 
 Jrab <- read.csv(paste0(datapath, "Spotlights/June22/Jrab.csv"))
