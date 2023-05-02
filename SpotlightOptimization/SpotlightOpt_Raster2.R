@@ -199,8 +199,12 @@ ncol(rast_template)#350
 
 # Manipulating Blank Raster  ----------------------------------------------
 
+#Creating cropped raster so can zoom in move on NCA and actually see routes
+rast_template_crop <- terra::crop(rast_template, NCAb_rast)
+
+
 #Plotting Raster and Vector objects together to check :  -----------
-plot(rast_template)
+plot(rast_template_crop)
 plot(st_geometry(NCAb_rast), add=TRUE)
 plot(st_geometry(Arabsite_rast), add=TRUE, col = "green")
 plot(st_geometry(Jrabsite_rast), add=TRUE, col="black")
@@ -213,6 +217,50 @@ plot(st_geometry(Sroute_rast), add=TRUE, col="blue")
 
 
 #################### STILL WORKING ON : #######################################
+
+## Calc how much of the route lines fall within each grid cell (terra::extract)(rasterization)
+
+#need to change sf objects to spatvector first before can use Rasterize:
+Nroute_spat <- terra::vect(Nroute_rast)
+#check:
+class(Nroute_spat)#worked
+
+#Rasterization of Routes:
+NRoute_test <- terra::rasterize(Nroute_spat, rast_template_crop)#worked
+# But what is it telling us?
+summary(NRoute_test)#dont understand what this tells us?
+plot(NRoute_test)#just shows Nroute basically 
+
+#notes from chapt.6 on rasterization:
+# The fun argument specifies summary statistics used to convert multiple 
+# observations in close proximity into associate cells in the raster object. 
+# By default fun = "last" is used but other options such as fun = "length" 
+# can be used, in this case to count the number of cycle hire points in each grid cell 
+#Example text from chapt.6:
+#ch_raster2 = rasterize(cycle_hire_osm_projected, raster_template, 
+#fun = "length")
+
+#I tried to add this to the end of Nroute_test line but it did not see to change anything?
+#what is the output we are looking for here?
+NRoute_test2 <- terra::rasterize(Nroute_spat, rast_template_crop, fun = "length")
+plot(NRoute_test2)
+#this is not working 
+# they just look the same 
+# i think it is because we are using a line here with the routes not points like
+#is used in chapt. 6
+
+# I am going to try it with the rabbit location data ,, see what happens?
+class(Arabsite_rast)
+#need to change sf objects to spatvector first before can use Rasterize:
+Arabsite_spat <- terra::vect(Arabsite_rast)
+class(Arabsite_spat)
+
+Arabsite_test <- terra::rasterize(Arabsite_spat, rast_template_crop, fun = "length")
+plot(Arabsite_test)
+#helped a little bit to zoom in but still very hard to see but this method did 
+#work for the points/ rab location 
+
+
 
 
 #transect each polygon with a grid cell :  -----------

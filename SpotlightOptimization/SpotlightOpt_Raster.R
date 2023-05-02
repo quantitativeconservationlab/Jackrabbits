@@ -1,7 +1,7 @@
 # Background --------------------------------------------------------------
 # 
 # This script's purpose:
-#        - Develope spatial objects from the rab loc data to be used in next steps (Spatial analysis)
+#        - Develop spatial objects from the rab loc data to be used in next steps (Spatial analysis)
 #        - combine rabloc to NCA 300m raster 
 #             - configuration of Jrab and Arab csv's to sf objects 
 #        - plot routes 
@@ -67,7 +67,7 @@ rastpath<-"Z:/Common/QCLData/Habitat/NLCD_new/NCA_raster_summaries_300m/"
 # Asite <- read.csv(paste0(datapath, "Spotlights/Aug22/ARoute.csv"))
 # #site level info for August 2022 spotlight surveys 
 
-Arab <- read.csv(paste0(datapath, "Spotlights/Aug22/Arab.csv"))
+#Arab <- read.csv(paste0(datapath, "Spotlights/Aug22/Arab.csv"))
 #Rab locations for August 2022 spotlight surveys 
 
 Arabsite <- read.csv(paste0(datapath, "Spotlights/Aug22/AJrabRoutes.csv"))
@@ -80,9 +80,9 @@ Arabsite <- read.csv(paste0(datapath, "Spotlights/Aug22/AJrabRoutes.csv"))
 #Jsite<-read.csv(paste0(datapath, "Spotlights/June22/JRoutes.csv"))
 #site level info for June 2022 spotlight surveys 
 
-Jrab <- read.csv(paste0(datapath, "Spotlights/June22/Jrab.csv"))
+#Jrab <- read.csv(paste0(datapath, "Spotlights/June22/Jrab.csv"))
 #Rab locations for June 2022 spotlight surveys 
-str(Jrab)
+#str(Jrab)
 
 Jrabsite <- read.csv(paste0(datapath, "Spotlights/June22/JJrabRoutes.csv"))
 #combined site level info and rabbit locations for aug22 spotlight surveys 
