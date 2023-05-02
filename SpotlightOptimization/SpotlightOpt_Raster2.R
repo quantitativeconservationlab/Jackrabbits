@@ -256,10 +256,21 @@ Arabsite_spat <- terra::vect(Arabsite_rast)
 class(Arabsite_spat)
 
 Arabsite_test <- terra::rasterize(Arabsite_spat, rast_template_crop, fun = "length")
-plot(Arabsite_test)
+plot(Arabsite_test)#shows the number or rab obs in each grid cell 
+
 #helped a little bit to zoom in but still very hard to see but this method did 
 #work for the points/ rab location 
 
+
+##repeat for June22 rab loc:
+class(Jrabsite_rast)
+#need to change sf objects to spatvector first before can use Rasterize:
+Jrabsite_spat <- terra::vect(Jrabsite_rast)
+class(Jrabsite_spat)
+
+Jrabsite_test <- terra::rasterize(Jrabsite_spat, rast_template_crop, fun = "length")
+plot(Jrabsite_test)#shows the number or rab obs in each grid cell 
+#works but still very zoomed out to be able to see much here
 
 
 
