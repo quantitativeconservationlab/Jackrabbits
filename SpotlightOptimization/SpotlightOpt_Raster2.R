@@ -1,5 +1,4 @@
 # Background --------------------------------------------------------------
-# This script in the 4th of 3 spotlight methodology optimization scripts 
 # This script's purpose:
 
 #       - create empty raster that matched specs of original raster (300m rast) 
@@ -203,8 +202,8 @@ ncol(rast_template)#350
 #Plotting Raster and Vector objects together to check :  -----------
 plot(rast_template)
 plot(st_geometry(NCAb_rast), add=TRUE)
-#plot(st_geometry(Arabsite_rast), add=TRUE, col = "green")
-#plot(st_geometry(Jrabsite_rast), add=TRUE, col="black")
+plot(st_geometry(Arabsite_rast), add=TRUE, col = "green")
+plot(st_geometry(Jrabsite_rast), add=TRUE, col="black")
 
 plot(st_geometry(Nroute_rast), add=TRUE, col="red")
 plot(st_geometry(Sroute_rast), add=TRUE, col="blue")
@@ -216,14 +215,14 @@ plot(st_geometry(Sroute_rast), add=TRUE, col="blue")
 #################### STILL WORKING ON : #######################################
 
 
-#transect each poly.with a grid cell :  -----------
+#transect each polygon with a grid cell :  -----------
 
 
 
 
 ############################################################################
-#These steps appear to not work rn - matts method/steps may need to be ajusted 
-# becasue this is not working rn 
+#These steps appear to not work here - Matt's method/steps may need to be adjusted 
+# because this is not working here 
 
 st_intersection(rast_template, Nroute_rast)
 #cant use on raster 
