@@ -46,23 +46,8 @@ We relied on tablets rather than GPS units to gather GPS points of rabbits
 observed along the routes. This led to a lack of data for this survey period
 - specifically the exact time that the GPS point was taken during the surveys
 
-
-
-# Following is individual breakdowns/background information for each script currently found within the SpotlightOptimization folder:
----------------------------------------------
-# Arab: -------------------------------------------------
-A csv file containing the cleaned jackrabbit observations data from August 2022 spotlight surveys collected on GPS units in the field for each individual jackrabbit observation. 
-Includes: Rab.Obv (all =Jackrab, because the total number of jackrabbits and cottontails observations from Aug22 was filtered to only include jackrabbits), name (this is the name of the observation inputted in the GPS in the field. Ja=Jackrabbit Adult, Jj= jackrabbit juvenile, Junk= jackrabbit unknown age class, Ca=Cottontail adult , Cj= cottontail juvenile, Cunkn=Cottontail  unknown age class, XXXX i = An (i) is added at the end of a species/age class when it was an incidental (meaning it was not not on one of the individual sites used in the beginning of 2022 - we switched to a North and South Routes method instead in late 2022), XXXX i e = (e) is added at the end of a GPS code if it was an incidental observed on the way out of the field or at the end of the route surveys, XXXX i b = (b) is added at the end of a GPS code if it was an incidental observed on the way into the field or at the beginning of the route surveys), Date, MST.time (time of GPS point taken in the field of the individual jackrabbit observation, converted to Mountain Standard Time), Hour (hour of night extracted from MST.time), lat, lon, geometry, SurveyNight (night number of when observation was taken - this was done because there is a 2 survey crews [dusk (10pm-2am) and dawn(2am-6am)] operating out in the field around the same time, and the dusk crew’s survey time overlapped 2 dates because they surveyed 10pm-2am. So, I developed the SurveyNight to make it easier to determine what day within the survey period the GPS points were made. 
-
-# Jrab:-------------------------------------------------
-A csv file containing the cleaned jackrabbit observations data from June 2022 spotlight surveys taken on tablets for each individual jackrabbit observation in the field. 
-Includes: Date, Crew_name (dawn or dusk), Rab.Obs (same as described in Arab except incidentals were labeled with and IO, and in june we did not know that we would need an (e or b) label to show us if we were beginning or ending a survey route, so there is no labels that show this in this data set), lat, lon, Night-number (same as SurveyNight in Arab in which each observation is given a night number of when observation was taken - this was done because there is a 2 survey crews [dusk (10pm-2am) and dawn(2am-6am)] operating out in the field around the same time, and the dusk crew’s survey time overlapped 2 dates because they surveyed 10pm-2am. So, I developed the SurveyNight to make it easier to determine what day within the survey period the GPS points were made, RouteID (either S.Route = southern route, or N.Route=Northern route) DayofYr. 
-
-Because we used tablets to collect the location data of each rabbit observation in June22 we were not able to extract the exact time of the observation but we were able to write code to determine which route the points were from with the date. 
-
-
-# Jrab_sf  & Arab_sf: ------------------------------------------
-These files are the exact same as Arab and Jrab (described above) but they were altered to be sf objects and then saved in that form to be called in later scripts if needed. 
+ 
+## Respository Metadata:
 
 # SpotlightOpt_RabLoc : ----------------------------------------
 Pulls data from dusk and dawn GPS’s, datasets,  and shape files instead of altered CSv’s from other previous scripts. 
